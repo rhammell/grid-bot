@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
-#include <XPT2046_Touchscreen.h>
+#include "TouchScreen.h"
 
 
 const uint16_t UNDO_ICON_COLOR[] PROGMEM = {
@@ -84,23 +84,32 @@ const uint16_t SETTINGS_ICON_COLOR[] PROGMEM = {
 };
 
 // TFT Pins
-#define TFT_CS 10
-#define TFT_RST 9
-#define TFT_DC 8
-#define TFT_LED 7
-
-// Touchscreen Pins
-#define TOUCH_CS 6
+#define TFT_CS 17
+#define TFT_DC 18
+#define TFT_RST 19
+#define TFT_LED 20
 
 // TFT display object
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 ///Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCK, TFT_RST, TFT_MISO);
 
-// Display brightness percent
-int display_brightness = 60;
+// Touchscreen Pins
+#define YP A4  // must be an analog pin, use "An" notation!
+#define XP 22  // can be any digital pin
+#define YM 23  // can be any digital pin
+#define XM A7  // must be an analog pin, use "An" notation!
 
 // Touchscreen object
-XPT2046_Touchscreen ts(TOUCH_CS);
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+// Touch screen calibration values
+#define TOUCH_MIN_X 790
+#define TOUCH_MAX_X 993
+#define TOUCH_MIN_Y 785
+#define TOUCH_MAX_Y 992
+
+// Display brightness percent
+int display_brightness = 60;
 
 // Screen dimensions
 int screen_width;
@@ -137,12 +146,6 @@ struct PathCell {
 // Initi path cell array and length
 PathCell* path;
 int path_length = 0;
-
-// Touch screen calibration values
-#define TOUCH_MIN_X 216
-#define TOUCH_MAX_X 3883
-#define TOUCH_MIN_Y 150
-#define TOUCH_MAX_Y 3771
 
 // Button dimension values
 int button_height = 36;
@@ -277,6 +280,9 @@ bool is_turning = false;        // Whether bot is currently executing a turn
 void setup() {
   Serial.begin(9600);
 
+  // Set ADC resolution for touchsceen
+  analogReadResolution(10);
+
   // Configure display LED pin
   pinMode(TFT_LED, OUTPUT);
 
@@ -293,10 +299,6 @@ void setup() {
 
   // Fill screen with black background
   tft.fillScreen(background_color);
-
-  // Initialize touchsceen object
-  ts.begin();
-  ts.setRotation(2);
 
   // Dynamically get screen dimensions
   screen_width = tft.width();
@@ -1038,11 +1040,11 @@ void executeMovement() {
 
 void loop() {
 
-  // Check if touch occured
-  if (ts.touched()) {
+  // Get touch data
+  TSPoint p = ts.getPoint();
 
-    // Get touch data
-    TS_Point p = ts.getPoint();
+  // Check if touch occured
+  if (p.z > ts.pressureThreshhold) {
 
     // Calculate touch pixel coordinates
     int pixel_x = map(p.x, TOUCH_MIN_X, TOUCH_MAX_X, 0, screen_width);
