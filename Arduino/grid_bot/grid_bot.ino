@@ -30,33 +30,33 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define TOUCH_MAX_Y 993
 
 // Display brightness percent
-int display_brightness = 60;
+int displayBrightness = 60;
 
 // Screen dimensions
-int screen_width;
-int screen_height;
+int screenWidth;
+int screenHeight;
 
 // Grid cell size
-int cell_size = 20;
+int cellSize = 20;
 
 // Grid dimensions and offsets
-int num_rows;
-int num_cols;
-int grid_width;
-int grid_height;
-int x_offset;
-int y_offset;
+int numRows;
+int numCols;
+int gridWidth;
+int gridHeight;
+int offsetX;
+int offsetY;
 
 // Grid display colors
-uint16_t background_color = ILI9341_BLACK;
-uint16_t selected_color = ILI9341_BLACK;
-uint16_t empty_color = ILI9341_WHITE;
-uint16_t grid_color = ILI9341_DARKGREY;
-uint16_t selectable_color = tft.color565(75, 225, 75);
-uint16_t arrow_color = ILI9341_WHITE;
+uint16_t backgroundColor = ILI9341_BLACK;
+uint16_t selectedColor = ILI9341_BLACK;
+uint16_t emptyColor = ILI9341_WHITE;
+uint16_t gridColor = ILI9341_DARKGREY;
+uint16_t selectableColor = tft.color565(75, 225, 75);
+uint16_t arrowColor = ILI9341_WHITE;
 
 // Init grid values array
-int** grid_vals;
+int** gridVals;
 
 // Path cell structure
 struct PathCell {
@@ -66,69 +66,69 @@ struct PathCell {
 
 // Initi path cell array and length
 PathCell* path;
-int path_length = 0;
+int pathLength = 0;
 
 // Button dimension values
-int button_height = 36;
-int button_margin = 2;
+int buttonHeight = 36;
+int buttonMargin = 2;
 
 // Start button position params
-int start_button_width;
-int start_button_x;
-int start_button_y;
+int startButtonWidth;
+int startButtonX;
+int startButtonY;
 
 // Undo button position params
-int undo_button_width = 36;
-int undo_button_x;
-int undo_button_y;
+int undoButtonWidth = 36;
+int undoButtonX;
+int undoButtonY;
 
 // Settings button position params
-int settings_button_width = 36;
-int settings_button_x;
-int settings_button_y;
+int settingsButtonWidth = 36;
+int settingsButtonX;
+int settingsButtonY;
 
 // Button display colors
-int button_idle_color = tft.color565(75, 75, 225);
-int button_counting_color = tft.color565(240, 124, 36);
-int button_running_color = tft.color565(255, 75, 75);
-int button_complete_color = tft.color565(75, 255, 75);
-int button_text_color = ILI9341_WHITE;
+int buttonIdleColor = tft.color565(75, 75, 225);
+int buttonCountingColor = tft.color565(240, 124, 36);
+int buttonRunningColor = tft.color565(255, 75, 75);
+int buttonCompleteColor = tft.color565(75, 255, 75);
+int buttonTextColor = ILI9341_WHITE;
 
 // Settings menu position params
-int settings_menu_width;
-int settings_menu_height;
-int settings_menu_x;
-int settings_menu_y;
+int settingsMenuWidth;
+int settingsMenuHeight;
+int settingsMenuX;
+int settingsMenuY;
 
 // Settings menu arrow params
-int settings_arrow_width = 20;
-int settings_arrow_height = 30;
-int settings_arrow_padding = 10;
-int settings_arrow_xmargin = 14;
+int settingsArrowWidth = 20;
+int settingsArrowHeight = 30;
+int settingsArrowPadding = 10;
+int settingsArrowMarginX = 14;
 
 // Brightness arrow position params
-int brightness_value_x;
-int brightness_value_y;
-int brightness_value_width;
-int brightness_left_arrow_x;
-int brightness_right_arrow_x;
-int brightness_arrow_y;
+int brightnessValueX;
+int brightnessValueY;
+int brightnessValueWidth;
+int brightnessLeftArrowX;
+int brightnessRightArrowX;
+int brightnessArrowY;
 
 // Size arrow position params
-int distance_value_x;
-int distance_value_y;
-int distance_value_width;
-int distance_left_arrow_x;
-int distance_right_arrow_x;
-int distance_arrow_y;
+int distanceValueX;
+int distanceValueY;
+int distanceValueWidth;
+int distanceLeftArrowX;
+int distanceRightArrowX;
+int distanceArrowY;
 
 // Speed arrow position params
-int speed_value_x;
-int speed_value_y;
-int speed_value_width;
-int speed_left_arrow_x;
-int speed_right_arrow_x;
-int speed_arrow_y;
+int speedValueX;
+int speedValueY;
+int speedValueWidth;
+int speedLeftArrowX;
+int speedRightArrowX;
+int speedArrowY;
 
 // States
 enum UIState {
@@ -140,7 +140,7 @@ enum UIState {
 };
 
 // Set current state
-UIState ui_state = IDLE;
+UIState uiState = IDLE;
 
 // Driving state enum
 enum DriveState {
@@ -150,7 +150,7 @@ enum DriveState {
 };
 
 // Set current state
-DriveState drive_state = STOPPED;
+DriveState driveState = STOPPED;
 
 // Drive speed enum
 enum DriveSpeed {
@@ -160,7 +160,7 @@ enum DriveSpeed {
 };
 
 // Set current drive speed
-DriveSpeed drive_speed = SPEED_STANDARD;
+DriveSpeed driveSpeed = SPEED_STANDARD;
 
 // Drive speed labels
 const char* DRIVE_SPEED_LABELS[] = { "Slow", "Standard", "Fast" };
@@ -173,30 +173,30 @@ enum DriveDistance {
 };
 
 // Set current grid size
-DriveDistance drive_distance = DISTANCE_STANDARD;
+DriveDistance driveDistance = DISTANCE_STANDARD;
 
 // Grid size labels
 const char* DRIVE_DISTANCE_LABELS[] = { "Compact", "Standard", "Extended" };
 
 // Defound countdown state
-unsigned long countdown_start = 0;
-const int countdown_duration = 5000;
-int countdown_number = -1;
+unsigned long countdownStart = 0;
+const int countdownDuration = 5000;
+int countdownNumber = -1;
 
 // Color scheme for settings menu
-uint16_t settings_menu_background_color = ILI9341_DARKGREY;
-uint16_t settings_menu_text_color = ILI9341_WHITE;
-uint16_t settings_menu_button_color = tft.color565(100, 100, 100);
+uint16_t settingsMenuBackgroundColor = ILI9341_DARKGREY;
+uint16_t settingsMenuTextColor = ILI9341_WHITE;
+uint16_t settingsMenuButtonColor = tft.color565(100, 100, 100);
 
 // Movement timing constants
 const unsigned long FORWARD_MOVE_TIME = 750;  // Time to move forward one cell
 const unsigned long TURN_MOVE_TIME = 500;     // Time to execute a 90-degree turn
 
 // Current movement tracking
-int current_path_index = 0;     // Current position in path array
-int current_direction = 0;      // 0=up, 1=right, 2=down, 3=left
-unsigned long move_start_time;  // Start time of current movement
-bool is_turning = false;        // Whether bot is currently executing a turn
+int currentPathIndex = 0;     // Current position in path array
+int currentDirection = 0;      // 0=up, 1=right, 2=down, 3=left
+unsigned long moveStartTime;  // Start time of current movement
+bool isTurning = false;        // Whether bot is currently executing a turn
 
 void setup() {
   Serial.begin(9600);
@@ -219,11 +219,11 @@ void setup() {
   tft.setRotation(0);
 
   // Fill screen with black background
-  tft.fillScreen(background_color);
+  tft.fillScreen(backgroundColor);
 
   // Dynamically get screen dimensions
-  screen_width = tft.width();
-  screen_height = tft.height();
+  screenWidth = tft.width();
+  screenHeight = tft.height();
 
   // Initialize grid values
   initGrid();
@@ -237,30 +237,30 @@ void setup() {
 
 void setBrightness() {
   // Ensure global brightness is in valid range
-  display_brightness = constrain(display_brightness, 0, 100);
+  displayBrightness = constrain(displayBrightness, 0, 100);
 
   // Convert percentage (0-100) to PWM value (0-255)
-  int pwm_value = map(display_brightness, 0, 100, 0, 255);
+  int pwmOutput = map(displayBrightness, 0, 100, 0, 255);
 
   // Set PWM output
-  analogWrite(TFT_LED, pwm_value);
+  analogWrite(TFT_LED, pwmOutput);
 }
 
 void initGrid() {
 
   // Calculate grid size, dimensions, and offsets
-  int available_height = screen_height - button_height - 1 - button_margin;
-  num_rows = (available_height - 1) / cell_size;
-  num_cols = ((screen_width - 1) / cell_size) - (((screen_width - 1) / cell_size) % 2 == 0 ? 1 : 0);
-  grid_width = cell_size * num_cols;
-  grid_height = cell_size * num_rows;
-  x_offset = (screen_width - grid_width - 1) / 2;
-  y_offset = (screen_height - grid_height - 1 - button_height - button_margin) / 2;
+  int availableHeight = screenHeight - buttonHeight - 1 - buttonMargin;
+  numRows = (availableHeight - 1) / cellSize;
+  numCols = ((screenWidth - 1) / cellSize) - (((screenWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
+  gridWidth = cellSize * numCols;
+  gridHeight = cellSize * numRows;
+  offsetX = (screenWidth - gridWidth - 1) / 2;
+  offsetY = (screenHeight - gridHeight - 1 - buttonHeight - buttonMargin) / 2;
 
   // Initialized 2D grid of cell values
-  grid_vals = new int*[num_rows];
-  for (int i = 0; i < num_rows; i++) {
-    grid_vals[i] = new int[num_cols];
+  gridVals = new int*[numRows];
+  for (int i = 0; i < numRows; i++) {
+    gridVals[i] = new int[numCols];
   }
 
   // Reset all grid values to 0
@@ -268,16 +268,16 @@ void initGrid() {
 }
 
 void resetGridValues() {
-  for (int i = 0; i < num_rows; i++) {
-    for (int j = 0; j < num_cols; j++) {
-      grid_vals[i][j] = 0;
+  for (int i = 0; i < numRows; i++) {
+    for (int j = 0; j < numCols; j++) {
+      gridVals[i][j] = 0;
     }
   }
 }
 
 void initPath() {
   // Inititilze array of path points
-  path = new PathCell[num_rows * num_cols];
+  path = new PathCell[numRows * numCols];
 
   // Set two initial default path points
   resetDefaultPath();
@@ -285,48 +285,48 @@ void initPath() {
 
 void resetDefaultPath() {
   // Set path length to zero
-  path_length = 0;
+  pathLength = 0;
 
   // Add to points at center bottom of grid
-  int start_row = num_rows - 1;
-  int start_col = num_cols / 2;
-  pathAdd(start_row, start_col);
-  pathAdd(start_row - 1, start_col);
+  int startRow = numRows - 1;
+  int startCol = numCols / 2;
+  pathAdd(startRow, startCol);
+  pathAdd(startRow - 1, startCol);
 }
 
 void pathAdd(int row, int col) {
   // Add coordinate to the list of path points
-  path[path_length] = { row, col };
-  path_length += 1;
+  path[pathLength] = { row, col };
+  pathLength += 1;
 
   // Update the grid value of point
-  grid_vals[row][col] = 1;
+  gridVals[row][col] = 1;
 }
 
 bool isSelectable(int row, int col) {
   // If cell is already selected, it's not selectable
-  if (grid_vals[row][col] == 1) {
+  if (gridVals[row][col] == 1) {
     return false;
   }
 
   // Get the last point in the path
-  PathCell last_point = path[path_length - 1];
+PathCell lastPoint = path[pathLength - 1];
 
   // Check if cell is adjacent (not diagonal) to last point
-  bool is_adjacent = (
+  bool isAdjacent = (
     // Check horizontal adjacency
-    (row == last_point.row && abs(col - last_point.col) == 1) ||
+    (row == lastPoint.row && abs(col - lastPoint.col) == 1) ||
     // Check vertical adjacency
-    (col == last_point.col && abs(row - last_point.row) == 1));
+    (col == lastPoint.col && abs(row - lastPoint.row) == 1));
 
-  return is_adjacent;
+  return isAdjacent;
 }
 
 
 void drawUserInterface() {
   // Draw all UI elements
   drawGridLines();
-  drawGridCells(0, num_rows - 1, 0, num_cols - 1);
+  drawGridCells(0, numRows - 1, 0, numCols - 1);
   drawUndoButton();
   drawStartButton();
   drawSettingsButton();
@@ -334,33 +334,33 @@ void drawUserInterface() {
 
 void drawGridLines() {
   // Draw horizontal grid lines
-  for (int i = 0; i < num_rows + 1; i++) {
+  for (int i = 0; i < numRows + 1; i++) {
     tft.drawLine(
-      x_offset,
-      i * cell_size + y_offset,
-      x_offset + grid_width,
-      i * cell_size + y_offset,
-      grid_color);
+      offsetX,
+      i * cellSize + offsetY,
+      offsetX + gridWidth,
+      i * cellSize + offsetY,
+      gridColor);
   }
 
   // Draw verticalgrid lines
-  for (int i = 0; i < num_cols + 1; i++) {
+  for (int i = 0; i < numCols + 1; i++) {
     tft.drawLine(
-      i * cell_size + x_offset,
-      y_offset,
-      i * cell_size + x_offset,
-      y_offset + grid_height,
-      grid_color);
+      i * cellSize + offsetX,
+      offsetY,
+      i * cellSize + offsetX,
+      offsetY + gridHeight,
+      gridColor);
   }
 }
 
 
 void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
   // Clamp values to grid bounds
-  startRow = max(0, min(startRow, num_rows - 1));
-  endRow = max(0, min(endRow, num_rows - 1));
-  startCol = max(0, min(startCol, num_cols - 1));
-  endCol = max(0, min(endCol, num_cols - 1));
+  startRow = max(0, min(startRow, numRows - 1));
+  endRow = max(0, min(endRow, numRows - 1));
+  startCol = max(0, min(startCol, numCols - 1));
+  endCol = max(0, min(endCol, numCols - 1));
 
   // Loop through row and col values
   for (int i = startRow; i <= endRow; i++) {
@@ -371,39 +371,38 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
       int color;
 
       // Check if cell is activated
-      if (grid_vals[i][j] == 1) {
+      if (gridVals[i][j] == 1) {
 
-        if (ui_state == RUNNING || ui_state == COMPLETE) {
-          for (int p = 0; p <= current_path_index; p++) {
+        if (uiState == RUNNING || uiState == COMPLETE) {
+          for (int p = 0; p <= currentPathIndex; p++) {
             if (i == path[p].row && j == path[p].col) {
-              color = selectable_color;
+              color = selectableColor;
               break;
             }
           }
         } else {
-          color = selected_color;
+          color = selectedColor;
         }
       }
       // UI is
-      else if (ui_state == IDLE && isSelectable(i, j)) {
-        color = selectable_color;  // Green for selectable cells
+      else if (uiState == IDLE && isSelectable(i, j)) {
+        color = selectableColor;  // Green for selectable cells
       }
       //
       else {
-        color = empty_color;
+        color = emptyColor;
       }
-
 
       // Draw cell rect
       tft.fillRect(
-        j * cell_size + x_offset + 1,
-        i * cell_size + y_offset + 1,
-        cell_size - 1,
-        cell_size - 1,
+        j * cellSize + offsetX + 1,
+        i * cellSize + offsetY + 1,
+        cellSize - 1,
+        cellSize - 1,
         color);
 
       // Loop through path point indexes
-      for (int p = 0; p < path_length; p++) {
+      for (int p = 0; p < pathLength; p++) {
 
         // Check if current cell is equal to path point
         if (i == path[p].row && j == path[p].col) {
@@ -413,11 +412,11 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
           PathCell nextPoint;
 
           // If only one path point, define next point to draw up arrow
-          if (path_length == 1) {
+          if (pathLength == 1) {
             nextPoint = { currentPoint.row - 1, currentPoint.col };
           }
           // If last path point, use current point to draw circle
-          else if (p == path_length - 1) {
+          else if (p == pathLength - 1) {
             nextPoint = currentPoint;
           }
           // If any other path point, use next point in path
@@ -433,256 +432,256 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
   }
 }
 
-void drawCellDirection(int row, int col, int next_row, int next_col) {
+void drawCellDirection(int row, int col, int nextRow, int nextCol) {
   // Calculate cell center
-  int center_x = col * cell_size + x_offset + (cell_size / 2);
-  int center_y = row * cell_size + y_offset + (cell_size / 2);
+  int centerX = col * cellSize + offsetX + (cellSize / 2);
+  int centerY = row * cellSize + offsetY + (cellSize / 2);
 
   // If last cell in path draw circle
-  if (row == path[path_length - 1].row && col == path[path_length - 1].col) {
-    int circle_radius = 3;
-    tft.fillCircle(center_x, center_y, circle_radius, arrow_color);
+  if (row == path[pathLength - 1].row && col == path[pathLength - 1].col) {
+    int circleRadius = 3;
+    tft.fillCircle(centerX, centerY, circleRadius, arrowColor);
     return;
   }
 
   // Calculate direction - reversed from before
-  int dx = next_col - col;  // Direction is next minus current
-  int dy = next_row - row;
+  int dx = nextCol - col;  // Direction is next minus current
+  int dy = nextRow - row;
 
   // Draw small filled triangle pointing in direction of movement
   if (dx > 0) {  // Moving right
     tft.fillTriangle(
-      center_x - 3, center_y - 3,
-      center_x - 3, center_y + 3,
-      center_x + 3, center_y,
-      arrow_color);
+      centerX - 3, centerY - 3,
+      centerX - 3, centerY + 3,
+      centerX + 3, centerY,
+      arrowColor);
   } else if (dx < 0) {  // Moving left
     tft.fillTriangle(
-      center_x + 3, center_y - 3,
-      center_x + 3, center_y + 3,
-      center_x - 3, center_y,
-      arrow_color);
+      centerX + 3, centerY - 3,
+      centerX + 3, centerY + 3,
+      centerX - 3, centerY,
+      arrowColor);
   } else if (dy > 0) {  // Moving down
     tft.fillTriangle(
-      center_x - 3, center_y - 3,
-      center_x + 3, center_y - 3,
-      center_x, center_y + 3,
-      arrow_color);
+      centerX - 3, centerY - 3,
+      centerX + 3, centerY - 3,
+      centerX, centerY + 3,
+      arrowColor);
   } else if (dy < 0) {  // Moving up
     tft.fillTriangle(
-      center_x - 3, center_y + 3,
-      center_x + 3, center_y + 3,
-      center_x, center_y - 3,
-      arrow_color);
+      centerX - 3, centerY + 3,
+      centerX + 3, centerY + 3,
+      centerX, centerY - 3,
+      arrowColor);
   }
 }
 
 void drawUndoButton() {
   // Calculate button x/y start
-  undo_button_y = y_offset + grid_height + button_margin + 1;
-  undo_button_x = x_offset;
+  undoButtonY = offsetY + gridHeight + buttonMargin + 1;
+  undoButtonX = offsetX;
 
   // Draw button background
-  tft.fillRect(undo_button_x, undo_button_y, undo_button_width, button_height, ILI9341_DARKGREY);
+  tft.fillRect(undoButtonX, undoButtonY, undoButtonWidth, buttonHeight, ILI9341_DARKGREY);
 
   // Calculate center position for icon
-  int icon_x = undo_button_x + (undo_button_width - 24) / 2;
-  int icon_y = undo_button_y + (button_height - 24) / 2;
+  int iconX = undoButtonX + (undoButtonWidth - 24) / 2;
+  int iconY = undoButtonY + (buttonHeight - 24) / 2;
 
   // Draw the icon
-  tft.drawRGBBitmap(icon_x, icon_y, UNDO_ICON_COLOR, 24, 24);
+  tft.drawRGBBitmap(iconX, iconY, UNDO_ICON_COLOR, 24, 24);
 }
 
 void drawStartButton() {
   // Calculate button x/y start
-  start_button_y = y_offset + grid_height + button_margin + 1;
-  start_button_x = undo_button_x + undo_button_width + button_margin;
+  startButtonY = offsetY + gridHeight + buttonMargin + 1;
+  startButtonX = undoButtonX + undoButtonWidth + buttonMargin;
 
   // Calculate start button width
-  start_button_width = grid_width - undo_button_width - button_margin - settings_button_width - button_margin + 1;
+  startButtonWidth = gridWidth - undoButtonWidth - buttonMargin - settingsButtonWidth - buttonMargin + 1;
 
   // Init color and text
-  uint16_t current_color;
-  String button_text;
+  uint16_t currentColor;
+  String buttonText;
 
-  switch (ui_state) {
+  switch (uiState) {
     case COUNTING:
       {
-        current_color = button_counting_color;
-        button_text = String(countdown_number);
+        currentColor = buttonCountingColor;
+        buttonText = String(countdownNumber);
         break;
       }
 
     case RUNNING:
-      current_color = button_running_color;
-      button_text = "Stop";
+      currentColor = buttonRunningColor;
+      buttonText = "Stop";
       break;
 
     case COMPLETE:
-      current_color = button_complete_color;
-      button_text = "Done!";
+      currentColor = buttonCompleteColor;
+      buttonText = "Done!";
       break;
 
     case IDLE:
     default:
-      current_color = button_idle_color;
-      button_text = "Start";
+      currentColor = buttonIdleColor;
+      buttonText = "Start";
       break;
   }
 
   // Draw button background
-  tft.fillRect(start_button_x, start_button_y, start_button_width, button_height, current_color);
+  tft.fillRect(startButtonX, startButtonY, startButtonWidth, buttonHeight, currentColor);
 
   // Set text properties
-  tft.setTextColor(button_text_color);
+  tft.setTextColor(buttonTextColor);
   tft.setTextSize(2);
 
   // Calculate text width (6 pixels per character at size 2)
-  int char_width = 6 * 2;  // Each character is 6 pixels * text size 2
-  int text_width = button_text.length() * char_width;
+  int charWidth = 6 * 2;  // Each character is 6 pixels * text size 2
+  int textWidth = buttonText.length() * charWidth;
 
   // Center text horizontally and vertically
-  int text_x = x_offset + (grid_width - text_width) / 2;
-  int text_y = start_button_y + (button_height - 16) / 2;  // 16 is character height at size 2
+  int textX = offsetX + (gridWidth - textWidth) / 2;
+  int textY = startButtonY + (buttonHeight - 16) / 2;  // 16 is character height at size 2
 
   // Draw text
-  tft.setCursor(text_x, text_y);
-  tft.print(button_text);
+  tft.setCursor(textX, textY);
+  tft.print(buttonText);
 }
 
 void drawSettingsButton() {
   // Calculate button x/y start
-  settings_button_y = y_offset + grid_height + button_margin + 1;
-  settings_button_x = start_button_x + start_button_width + button_margin;
+  settingsButtonY = offsetY + gridHeight + buttonMargin + 1;
+  settingsButtonX = startButtonX + startButtonWidth + buttonMargin;
 
   // Draw button background
-  tft.fillRect(settings_button_x, settings_button_y, settings_button_width, button_height, ILI9341_DARKGREY);
+  tft.fillRect(settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight, ILI9341DARKGREY);
 
   // Calculate center position for icon
-  int icon_x = settings_button_x + (settings_button_width - 24) / 2;  // Center 20px wide icon
-  int icon_y = settings_button_y + (button_height - 24) / 2;          // Center 20px tall icon
+  int iconX = settingsButtonX + (settingsButtonWidth - 24) / 2;  // Center 20px wide icon
+  int iconY = settingsButtonY + (buttonHeight - 24) / 2;          // Center 20px tall icon
 
   // Draw the icon
-  tft.drawRGBBitmap(icon_x, icon_y, SETTINGS_ICON_COLOR, 24, 24);
+  tft.drawRGBBitmap(iconX, iconY, SETTINGSICONCOLOR, 24, 24);
 }
 
 void drawSettingsMenu() {
   // Calculate menu dimensions and position
-  settings_menu_width = grid_width * 0.85;
-  settings_menu_height = 225;
-  settings_menu_x = x_offset + (grid_width - settings_menu_width) / 2;
-  settings_menu_y = y_offset + (grid_height - settings_menu_height) / 2;
+  settingsMenuWidth = gridWidth * 0.85;
+  settingsMenuHeight = 225;
+  settingsMenuX = offsetX + (gridWidth - settingsMenuWidth) / 2;
+  settingsMenuY = offsetY + (gridHeight - settingsMenuHeight) / 2;
 
   // Draw menu background
-  tft.fillRect(settings_menu_x, settings_menu_y, settings_menu_width, settings_menu_height, settings_menu_background_color);
-  tft.drawRect(settings_menu_x, settings_menu_y, settings_menu_width, settings_menu_height, ILI9341_WHITE);
+  tft.fillRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, settingsMenuBackgroundColor);
+  tft.drawRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, ILI9341WHITE);
 
   // Set text size and color
   tft.setTextSize(2);
-  tft.setTextColor(settings_menu_text_color);
-  int char_width = 12;
+  tft.setTextColor(settingsMenuTextColor);
+  int charWidth = 12;
 
   // Draw brightness setting label
-  String brightness_label = "Brightness";
-  int brightness_label_x = settings_menu_x + (settings_menu_width - brightness_label.length() * char_width) / 2;
-  int brightness_label_y = settings_menu_y + 20;
-  tft.setCursor(brightness_label_x, brightness_label_y);
-  tft.print(brightness_label);
+  String brightnessLabel = "Brightness";
+  int brightnessLabelX = settingsMenuX + (settingsMenuWidth - brightnessLabel.length() * charWidth) / 2;
+  int brightnessLabelY = settingsMenuY + 20;
+  tft.setCursor(brightnessLabelX, brightnessLabelY);
+  tft.print(brightnessLabel);
 
   // Calculate brightness arrow positions
-  brightness_left_arrow_x = settings_menu_x + settings_arrow_xmargin;
-  brightness_right_arrow_x = settings_menu_x + settings_menu_width - settings_arrow_xmargin - settings_arrow_width;
-  brightness_arrow_y = brightness_label_y + 20;
+  brightnessLeftArrowX = settingsMenuX + settingsArrowMarginX;
+  brightnessRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  brightnessArrowY = brightnessLabelY + 20;
 
   // Draw left arrow button
   tft.fillTriangle(
-    brightness_left_arrow_x, brightness_arrow_y + settings_arrow_height / 2,
-    brightness_left_arrow_x + settings_arrow_width, brightness_arrow_y + settings_arrow_height / 4,
-    brightness_left_arrow_x + settings_arrow_width, brightness_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    brightnessLeftArrowX, brightnessArrowY + settingsArrowHeight / 2,
+    brightnessLeftArrowX + settingsArrowWidth, brightnessArrowY + settingsArrowHeight / 4,
+    brightnessLeftArrowX + settingsArrowWidth, brightnessArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Draw right arrow button
   tft.fillTriangle(
-    brightness_right_arrow_x + settings_arrow_width, brightness_arrow_y + settings_arrow_height / 2,
-    brightness_right_arrow_x, brightness_arrow_y + settings_arrow_height / 4,
-    brightness_right_arrow_x, brightness_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    brightnessRightArrowX + settingsArrowWidth, brightnessArrowY + settingsArrowHeight / 2,
+    brightnessRightArrowX, brightnessArrowY + settingsArrowHeight / 4,
+    brightnessRightArrowX, brightnessArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Calculate and store brightness value position
-  int max_brightness_chars = 4;
-  brightness_value_y = brightness_arrow_y + (settings_arrow_height - 16) / 2;
-  brightness_value_width = max_brightness_chars * char_width;
-  brightness_value_x = settings_menu_x + (settings_menu_width - brightness_value_width) / 2 + 2;
+  int maxBrightnessChars = 4;
+  brightnessValueY = brightnessArrowY + (settingsArrowHeight - 16) / 2;
+  brightnessValueWidth = maxBrightnessChars * charWidth;
+  brightnessValueX = settingsMenuX + (settingsMenuWidth - brightnessValueWidth) / 2 + 2;
 
   // Draw brightness value
   updateBrightnessDisplay();
 
   // Draw speed setting label
-  String speed_label = "Drive Speed";
-  int speed_label_x = settings_menu_x + (settings_menu_width - speed_label.length() * char_width) / 2;
-  int speed_label_y = brightness_label_y + 70;
-  tft.setCursor(speed_label_x, speed_label_y);
-  tft.print(speed_label);
+  String speedLabel = "Drive Speed";
+  int speedLabelX = settingsMenuX + (settingsMenuWidth - speedlabel.length() * charWidth) / 2;
+  int speedLabelY = brightnessLabelY + 70;
+  tft.setCursor(speedLabelX, speedLabelY);
+  tft.print(speedLabel);
 
   // Calculate size arrow positions
-  speed_left_arrow_x = settings_menu_x + settings_arrow_xmargin;
-  speed_right_arrow_x = settings_menu_x + settings_menu_width - settings_arrow_xmargin - settings_arrow_width;
-  speed_arrow_y = speed_label_y + 20;
+  speedLeftArrowX = settingsMenuX + settingsArrowMarginX;
+  speedRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  speedArrowY = speedLabelY + 20;
 
   // Draw left arrow button
   tft.fillTriangle(
-    speed_left_arrow_x, speed_arrow_y + settings_arrow_height / 2,
-    speed_left_arrow_x + settings_arrow_width, speed_arrow_y + settings_arrow_height / 4,
-    speed_left_arrow_x + settings_arrow_width, speed_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    speedLeftArrowX, speedArrowY + settingsArrowHeight / 2,
+    speedLeftArrowX + settingsArrowWidth, speedArrowY + settingsArrowHeight / 4,
+    speedLeftArrowX + settingsArrowWidth, speedArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Draw right arrow button
   tft.fillTriangle(
-    speed_right_arrow_x + settings_arrow_width, speed_arrow_y + settings_arrow_height / 2,
-    speed_right_arrow_x, speed_arrow_y + settings_arrow_height / 4,
-    speed_right_arrow_x, speed_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    speedRightArrowX + settingsArrowWidth, speedArrowY + settingsArrowHeight / 2,
+    speedRightArrowX, speedArrowY + settingsArrowHeight / 4,
+    speedRightArrowX, speedArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Calculate and store speed value position
-  int max_speed_chars = 8;  // "Standard" is the longest label
-  speed_value_y = speed_arrow_y + (settings_arrow_height - 16) / 2;
-  speed_value_width = max_speed_chars * char_width;
-  speed_value_x = settings_menu_x + (settings_menu_width - speed_value_width) / 2 + 2;
+  int maxSpeedChars = 8;  // "Standard" is the longest label
+  speedValueY = speedArrowY + (settingsArrowHeight - 16) / 2;
+  speedValueWidth = maxSpeedChars * charWidth;
+  speedValueX = settingsMenuX + (settingsMenuWidth - speedValueWidth) / 2 + 2;
 
   // Draw initial speed value
   updateDriveSpeedDisplay();
 
   // Draw grid size setting label
-  String distance_label = "Drive Distance";
-  int distance_label_x = settings_menu_x + (settings_menu_width - distance_label.length() * char_width) / 2;
-  int distance_label_y = speed_label_y + 70;
-  tft.setCursor(distance_label_x, distance_label_y);
-  tft.print(distance_label);
+  String distanceLabel = "Drive Distance";
+  int distanceLabelX = settingsMenuX + (settingsMenuWidth - distancelabel.length() * charWidth) / 2;
+  int distanceLabelY = speedLabelY + 70;
+  tft.setCursor(distanceLabelX, distanceLabelY);
+  tft.print(distanceLabel);
 
   // Calculate size arrow positions
-  distance_left_arrow_x = settings_menu_x + settings_arrow_xmargin;
-  distance_right_arrow_x = settings_menu_x + settings_menu_width - settings_arrow_xmargin - settings_arrow_width;
-  distance_arrow_y = distance_label_y + 20;
+  distanceLeftArrowX = settingsMenuX + settingsArrowMarginX;
+  distanceRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  distanceArrowY = distanceLabelY + 20;
 
   // Draw left arrow button
   tft.fillTriangle(
-    distance_left_arrow_x, distance_arrow_y + settings_arrow_height / 2,
-    distance_left_arrow_x + settings_arrow_width, distance_arrow_y + settings_arrow_height / 4,
-    distance_left_arrow_x + settings_arrow_width, distance_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    distanceLeftArrowX, distanceArrowY + settingsArrowHeight / 2,
+    distanceLeftArrowX + settingsArrowWidth, distanceArrowY + settingsArrowHeight / 4,
+    distanceLeftArrowX + settingsArrowWidth, distanceArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Draw right arrow button
   tft.fillTriangle(
-    distance_right_arrow_x + settings_arrow_width, distance_arrow_y + settings_arrow_height / 2,
-    distance_right_arrow_x, distance_arrow_y + settings_arrow_height / 4,
-    distance_right_arrow_x, distance_arrow_y + (3 * settings_arrow_height) / 4,
-    settings_menu_text_color);
+    distanceRightArrowX + settingsArrowWidth, distanceArrowY + settingsArrowHeight / 2,
+    distanceRightArrowX, distanceArrowY + settingsArrowHeight / 4,
+    distanceRightArrowX, distanceArrowY + (3 * settingsArrowHeight) / 4,
+    settingsMenuTextColor);
 
   // Calculate and store size value position
-  int max_size_chars = 8;  // "Standard" is the longest label
-  distance_value_y = distance_arrow_y + (settings_arrow_height - 16) / 2;
-  distance_value_width = max_size_chars * char_width;
-  distance_value_x = settings_menu_x + (settings_menu_width - distance_value_width) / 2 + 2;
+  int maxSizeChars = 8;  // "Standard" is the longest label
+  distanceValueY = distanceArrowY + (settingsArrowHeight - 16) / 2;
+  distanceValueWidth = maxSizeChars * charWidth;
+  distanceValueX = settingsMenuX + (settingsMenuWidth - distanceValueWidth) / 2 + 2;
 
   // Draw initial size value
   updateDriveDistanceDisplay();
@@ -691,127 +690,127 @@ void drawSettingsMenu() {
 void updateBrightnessDisplay() {
   // Clear the entire value area
   tft.fillRect(
-    brightness_value_x,
-    brightness_value_y,
-    brightness_value_width,
+    brightnessValueX,
+    brightnessValueY,
+    brightnessValueWidth,
     16,
-    settings_menu_background_color);
+    settingsMenuBackgroundColor);
 
   // Set text size
   tft.setTextSize(2);
-  int char_width = 12;
+  int charWidth = 12;
 
   // Calculate width of current value text
-  String brightness_text = String(display_brightness) + "%";
-  int actual_text_width = brightness_text.length() * char_width;
+  String brightnessText = String(displayBrightness) + "%";
+  int actualTextWidth = brightnessText.length() * charWidth;
 
   // Calculate centered position for current text
-  int text_x = settings_menu_x + (settings_menu_width - actual_text_width) / 2 + 2;
-  tft.setTextColor(settings_menu_text_color);
-  tft.setCursor(text_x, brightness_value_y);
-  tft.print(brightness_text);
+  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
+  tft.setTextColor(settingsMenuTextColor);
+  tft.setCursor(textX, brightnessValueY);
+  tft.print(brightnessText);
 }
 
 void updateDriveSpeedDisplay() {
   // Clear the entire value area
   tft.fillRect(
-    speed_value_x,
-    speed_value_y,
-    speed_value_width,
+    speedValueX,
+    speedValueY,
+    speedValueWidth,
     16,
-    settings_menu_background_color);
+    settingsMenuBackgroundColor);
 
   // Set text size
   tft.setTextSize(2);
-  int char_width = 12;
+  int charWidth = 12;
 
   // Get current speed label
-  String speed_text = DRIVE_SPEED_LABELS[drive_speed];
-  int actual_text_width = speed_text.length() * char_width;
+  String speedText = DRIVE_SPEED_LABELS[driveSpeed];
+  int actualTextWidth = speedText.length() * charWidth;
 
   // Calculate centered position for current text
-  int text_x = settings_menu_x + (settings_menu_width - actual_text_width) / 2 + 2;
-  tft.setTextColor(settings_menu_text_color);
-  tft.setCursor(text_x, speed_value_y);
-  tft.print(speed_text);
+  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
+  tft.setTextColor(settingsMenuTextColor);
+  tft.setCursor(textX, speedValueY);
+  tft.print(speedText);
 }
 
 void updateDriveDistanceDisplay() {
   // Clear the entire value area
   tft.fillRect(
-    distance_value_x,
-    distance_value_y,
-    distance_value_width,
+    distanceValueX,
+    distanceValueY,
+    distanceValueWidth,
     16,
-    settings_menu_background_color);
+    settingsMenuBackgroundColor);
 
   // Set text size
   tft.setTextSize(2);
-  int char_width = 12;
+  int charWidth = 12;
 
   // Get current size label
-  String distance_text = DRIVE_DISTANCE_LABELS[drive_distance];
-  int actual_text_width = distance_text.length() * char_width;
+  String distanceText = DRIVE_DISTANCE_LABELS[driveDistance];
+  int actualTextWidth = distanceText.length() * charWidth;
 
   // Calculate centered position for current text
-  int text_x = settings_menu_x + (settings_menu_width - actual_text_width) / 2 + 2;
-  tft.setTextColor(settings_menu_text_color);
-  tft.setCursor(text_x, distance_value_y);
-  tft.print(distance_text);
+  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
+  tft.setTextColor(settingsMenuTextColor);
+  tft.setCursor(textX, distanceValueY);
+  tft.print(distanceText);
 }
 
 bool isTouchInUndoButton(int x, int y) {
-  return x >= undo_button_x && x <= undo_button_x + undo_button_width && y >= undo_button_y && y <= undo_button_y + button_height;
+  return x >= undoButtonX && x <= undoButtonX + undoButtonWidth && y >= undoButtonY && y <= undoButtonY + buttonHeight;
 }
 
 bool isTouchInSettingsButton(int x, int y) {
-  return x >= settings_button_x && x <= settings_button_x + settings_button_width && y >= settings_button_y && y <= settings_button_y + button_height;
+  return x >= settingsButtonX && x <= settingsButtonX + settingsButtonWidth && y >= settingsButtonY && y <= settingsButtonY + buttonHeight;
 }
 
 bool isTouchInStartButton(int x, int y) {
-  return x >= start_button_x && x <= start_button_x + start_button_width && y >= start_button_y && y <= start_button_y + button_height;
+  return x >= startButtonX && x <= startButtonX + startButtonWidth && y >= startButtonY && y <= startButtonY + buttonHeight;
 }
 
 bool isTouchInGrid(int x, int y) {
-  return x >= x_offset && x < x_offset + grid_width && y >= y_offset && y < y_offset + grid_height;
+  return x >= offsetX && x < offsetX + gridWidth && y >= offsetY && y < offsetY + gridHeight;
 }
 
 bool isTouchInBrightnessLeftArrow(int x, int y) {
-  return x >= brightness_left_arrow_x - settings_arrow_padding && x <= brightness_left_arrow_x + settings_arrow_width + settings_arrow_padding && y >= brightness_arrow_y - settings_arrow_padding && y <= brightness_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= brightnessLeftArrowX - settingsArrowPadding && x <= brightnessLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= brightnessArrowY - settingsArrowPadding && y <= brightnessArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 bool isTouchInBrightnessRightArrow(int x, int y) {
-  return x >= brightness_right_arrow_x - settings_arrow_padding && x <= brightness_right_arrow_x + settings_arrow_width + settings_arrow_padding && y >= brightness_arrow_y - settings_arrow_padding && y <= brightness_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= brightnessRightArrowX - settingsArrowPadding && x <= brightnessRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= brightnessArrowY - settingsArrowPadding && y <= brightnessArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 bool isTouchInSizeLeftArrow(int x, int y) {
-  return x >= distance_left_arrow_x - settings_arrow_padding && x <= distance_left_arrow_x + settings_arrow_width + settings_arrow_padding && y >= distance_arrow_y - settings_arrow_padding && y <= distance_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= distanceLeftArrowX - settingsArrowPadding && x <= distanceLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= distanceArrowY - settingsArrowPadding && y <= distanceArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 bool isTouchInSizeRightArrow(int x, int y) {
-  return x >= distance_right_arrow_x - settings_arrow_padding && x <= distance_right_arrow_x + settings_arrow_width + settings_arrow_padding && y >= distance_arrow_y - settings_arrow_padding && y <= distance_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= distanceRightArrowX - settingsArrowPadding && x <= distanceRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= distanceArrowY - settingsArrowPadding && y <= distanceArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 bool isTouchInSpeedLeftArrow(int x, int y) {
-  return x >= speed_left_arrow_x - settings_arrow_padding && x <= speed_left_arrow_x + settings_arrow_width + settings_arrow_padding && y >= speed_arrow_y - settings_arrow_padding && y <= speed_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= speedLeftArrowX - settingsArrowPadding && x <= speedLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= speedArrowY - settingsArrowPadding && y <= speedArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 bool isTouchInSpeedRightArrow(int x, int y) {
-  return x >= speed_right_arrow_x - settings_arrow_padding && x <= speed_right_arrow_x + settings_arrow_width + settings_arrow_padding && y >= speed_arrow_y - settings_arrow_padding && y <= speed_arrow_y + settings_arrow_height + settings_arrow_padding;
+  return x >= speedRightArrowX - settingsArrowPadding && x <= speedRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= speedArrowY - settingsArrowPadding && y <= speedArrowY + settingsArrowHeight + settingsArrowPadding;
 }
 
 // Function to calculate direction between two points
-int getDirection(int start_row, int start_col, int end_row, int end_col) {
-  if (end_row < start_row) return 0;  // Up
-  if (end_col > start_col) return 1;  // Right
-  if (end_row > start_row) return 2;  // Down
-  if (end_col < start_col) return 3;  // Left
-  return current_direction;           // No change
+int getDirection(int startRow, int startCol, int endRow, int endCol) {
+  if (endRow < startRow) return 0;  // Up
+  if (endCol > startCol) return 1;  // Right
+  if (endRow > startRow) return 2;  // Down
+  if (endCol < startCol) return 3;  // Left
+  return currentDirection;           // No change
 }
 
 // Function to calculate required turn
-int calculateTurn(int current_dir, int target_dir) {
-  int diff = target_dir - current_dir;
+int calculateTurn(int currentDir, int targetDir) {
+  int diff = targetDir - currentDir;
 
   // Normalize to -1 (left) or 1 (right)
   if (diff == 3) diff = -1;
@@ -828,13 +827,13 @@ void printCurrentCell(PathCell current, PathCell next) {
 void executeMovement() {
 
   // Get current and next points
-  PathCell current = path[current_path_index];
-  PathCell next = path[current_path_index + 1];
+  PathCell current = path[currentPathIndex];
+  PathCell next = path[currentPathIndex + 1];
 
   // Calculate target direction
-  int target_direction = getDirection(current.row, current.col, next.row, next.col);
+  int targetDirection = getDirection(current.row, current.col, next.row, next.col);
 
-  switch (drive_state) {
+  switch (driveState) {
 
     // Stopped driving state
     case STOPPED:
@@ -847,11 +846,11 @@ void executeMovement() {
         drawGridCells(current.row, current.row, current.col, current.col);
 
         // Check if aligned to target diretion
-        if (current_direction == target_direction) {
+        if (currentDirection == targetDirection) {
 
           // Set driving flags
-          drive_state = DRIVING;
-          move_start_time = millis();
+          driveState = DRIVING;
+          moveStartTime = millis();
 
           // Here you would add actual motor control:
           // driveForward();
@@ -862,11 +861,11 @@ void executeMovement() {
         else {
 
           // Set turing flags
-          drive_state = TURNING;
-          move_start_time = millis();
+          driveState = TURNING;
+          moveStartTime = millis();
 
           // Get turn direction
-          int turn = calculateTurn(current_direction, target_direction);
+          int turn = calculateTurn(currentDirection, targetDirection);
 
           // Here you would add actual motor control:
           // if (turn < 0) turnLeft();
@@ -883,14 +882,14 @@ void executeMovement() {
       {
 
         // Check if driving movement is complete
-        if (millis() - move_start_time >= FORWARD_MOVE_TIME) {
+        if (millis() - moveStartTime >= FORWARD_MOVE_TIME) {
 
           // Update current path point
-          current_path_index++;
-          move_start_time = millis();  // Reset timer for next movement
+          currentPathIndex++;
+          moveStartTime = millis();  // Reset timer for next movement
 
           // Check if current path point is the last
-          if (current_path_index >= path_length - 1) {
+          if (currentPathIndex >= pathLength - 1) {
 
             // Here you would stop motors:
             // stopMotors();
@@ -900,8 +899,8 @@ void executeMovement() {
             drawGridCells(next.row, next.row, next.col, next.col);
 
             // Update UI and driving state
-            ui_state = COMPLETE;
-            drive_state = STOPPED;
+            uiState = COMPLETE;
+            driveState = STOPPED;
             drawStartButton();
           }
 
@@ -909,9 +908,9 @@ void executeMovement() {
           else {
 
             // Calculate next direction
-            current = path[current_path_index];
-            next = path[current_path_index + 1];
-            int next_direction = getDirection(current.row, current.col, next.row, next.col);
+            current = path[currentPathIndex];
+            next = path[currentPathIndex + 1];
+            int nextDirection = getDirection(current.row, current.col, next.row, next.col);
 
             // Print current cell being processed
             printCurrentCell(current, next);
@@ -920,8 +919,8 @@ void executeMovement() {
             drawGridCells(current.row, current.row, current.col, current.col);
 
             // If direction changes, stop for turn
-            if (next_direction != current_direction) {
-              drive_state = STOPPED;
+            if (nextDirection != currentDirection) {
+              driveState = STOPPED;
               // Here you would stop motors:
               // stopMotors();
               Serial.println("Stopping for turn");
@@ -941,12 +940,12 @@ void executeMovement() {
       {
 
         // Check if turn is complete
-        if (millis() - move_start_time >= TURN_MOVE_TIME) {
+        if (millis() - moveStartTime >= TURN_MOVE_TIME) {
 
           // Update direction and start driving
-          current_direction = target_direction;
-          drive_state = DRIVING;
-          move_start_time = millis();
+          currentDirection = targetDirection;
+          driveState = DRIVING;
+          moveStartTime = millis();
 
           // Here you would update motor control:
           // stopTurning();
@@ -968,51 +967,51 @@ void loop() {
   if (p.z > ts.pressureThreshhold) {
 
     // Calculate touch pixel coordinates
-    int pixel_x = map(p.x, TOUCH_MIN_X, TOUCH_MAX_X, 0, screen_width);
-    int pixel_y = map(p.y, TOUCH_MIN_Y, TOUCH_MAX_Y, 0, screen_height);
-    Serial.println(pixel_x);
-    Serial.println(pixel_y);
+    int pixelX = map(p.x, TOUCH_MIN_X, TOUCH_MAX_X, 0, screenWidth);
+    int pixelY = map(p.y, TOUCH_MIN_Y, TOUCH_MAX_Y, 0, screenHeight);
+    Serial.println(pixelX);
+    Serial.println(pixelY);
     Serial.println(" ");
 
     // Check if start button touched while not in settings state
-    if (isTouchInStartButton(pixel_x, pixel_y) && ui_state != SETTINGS) {
+    if (isTouchInStartButton(pixelX, pixelY) && uiState != SETTINGS) {
       Serial.println("Start button touched");
 
       // Process touch based on current state
-      switch (ui_state) {
+      switch (uiState) {
 
         // Idle state
         case IDLE:
           {
             // Set to counting state and initialze couting variables
-            ui_state = COUNTING;
-            countdown_start = millis();
-            countdown_number = countdown_duration / 1000;
+            uiState = COUNTING;
+            countdownStart = millis();
+            countdownNumber = countdownDuration / 1000;
             break;
           }
 
         // Counting state
         case COUNTING:
           // Set to idle state
-          ui_state = IDLE;
+          uiState = IDLE;
           break;
 
         // Running state
         case RUNNING:
           // Set to idle state and stopped driving state
-          ui_state = IDLE;
-          drive_state = STOPPED;
+          uiState = IDLE;
+          driveState = STOPPED;
           break;
 
         // Running state
         case COMPLETE:
           // Set to idle state
-          ui_state = IDLE;
+          uiState = IDLE;
           break;
       }
 
       // Redraw entire grid
-      drawGridCells(0, num_rows - 1, 0, num_cols - 1);
+      drawGridCells(0, numRows - 1, 0, numCols - 1);
 
       // Draw button
       drawStartButton();
@@ -1022,7 +1021,7 @@ void loop() {
     }
 
     // Check if undo button touched while in idle state
-    else if (isTouchInUndoButton(pixel_x, pixel_y) && ui_state == IDLE) {
+    else if (isTouchInUndoButton(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Undo button touched");
 
       // Reset grid values and path to default cells
@@ -1030,29 +1029,29 @@ void loop() {
       resetDefaultPath();
 
       // Redraw entire grid
-      drawGridCells(0, num_rows - 1, 0, num_cols - 1);
+      drawGridCells(0, numRows - 1, 0, numCols - 1);
 
       // Debounce delay
       delay(50);
     }
 
     // Check if settings button touched
-    else if (isTouchInSettingsButton(pixel_x, pixel_y)) {
+    else if (isTouchInSettingsButton(pixelX, pixelY)) {
       Serial.println("Settings button touched");
 
       // Check if in idle state
-      if (ui_state == IDLE) {
+      if (uiState == IDLE) {
 
         // Change to settings state and show menu
-        ui_state = SETTINGS;
+        uiState = SETTINGS;
         drawSettingsMenu();
       }
 
       // Check if in settings state
-      else if (ui_state == SETTINGS) {
+      else if (uiState == SETTINGS) {
 
         // Change back to idle state and redraw main interface
-        ui_state = IDLE;
+        uiState = IDLE;
         drawUserInterface();
       }
 
@@ -1061,79 +1060,79 @@ void loop() {
     }
 
     // Check if grid touched while in idle state
-    else if (isTouchInGrid(pixel_x, pixel_y) && ui_state == IDLE) {
+    else if (isTouchInGrid(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Grid button touched");
 
       // Calculated col/row of touched cell
-      int grid_col = (pixel_x - x_offset) / cell_size;
-      int grid_row = (pixel_y - y_offset) / cell_size;
-      Serial.println(grid_col);
-      Serial.println(grid_row);
+      int gridCol = (pixelX - offsetX) / cellSize;
+      int gridRow = (pixelY - offsetY) / cellSize;
+      Serial.println(gridCol);
+      Serial.println(gridRow);
       Serial.println(" ");
 
       // If cell is selectable, add to path and redraw surrounding cells
-      if (isSelectable(grid_row, grid_col)) {
-        pathAdd(grid_row, grid_col);
-        drawGridCells(grid_row - 2, grid_row + 2, grid_col - 2, grid_col + 2);
+      if (isSelectable(gridRow, gridCol)) {
+        pathAdd(gridRow, gridCol);
+        drawGridCells(gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
       }
     }
 
     // Check if in settings state
-    else if (ui_state == SETTINGS) {
+    else if (uiState == SETTINGS) {
 
       // Check if touch is in brightness right arrow
-      if (isTouchInBrightnessRightArrow(pixel_x, pixel_y)) {
+      if (isTouchInBrightnessRightArrow(pixelX, pixelY)) {
         // Increase brightness and redraw value
-        display_brightness = min(100, display_brightness + 10);
+        displayBrightness = min(100, displayBrightness + 10);
         setBrightness();
         updateBrightnessDisplay();
         delay(250);
       }
 
       // Check if touch is in brightness left arrow
-      else if (isTouchInBrightnessLeftArrow(pixel_x, pixel_y)) {
+      else if (isTouchInBrightnessLeftArrow(pixelX, pixelY)) {
         // Decrease brightness and redraw value
-        display_brightness = max(10, display_brightness - 10);
+        displayBrightness = max(10, displayBrightness - 10);
         setBrightness();
         updateBrightnessDisplay();
         delay(250);
       }
 
       // Check if touch is in size right arrow
-      else if (isTouchInSizeRightArrow(pixel_x, pixel_y)) {
+      else if (isTouchInSizeRightArrow(pixelX, pixelY)) {
         // Increase drive speed and redraw value
-        if (drive_distance < DISTANCE_EXTENDED) {
-          drive_distance = (DriveDistance)(drive_distance + 1);
+        if (driveDistance < DISTANCE_EXTENDED) {
+          driveDistance = (DriveDistance)(driveDistance + 1);
           updateDriveDistanceDisplay();
         }
         delay(250);
       }
 
       // Check if touch is in size left arrow
-      else if (isTouchInSizeLeftArrow(pixel_x, pixel_y)) {
+      else if (isTouchInSizeLeftArrow(pixelX, pixelY)) {
         // Decrease drive distance and redraw value
-        if (drive_distance > DISTANCE_COMPACT) {
-          drive_distance = (DriveDistance)(drive_distance - 1);
+        if (driveDistance > DISTANCE_COMPACT) {
+          driveDistance = (DriveDistance)(driveDistance - 1);
           updateDriveDistanceDisplay();
         }
         delay(250);
       }
 
       // Check if touch is in speed right arrow
-      else if (isTouchInSpeedRightArrow(pixel_x, pixel_y)) {
+      else if (isTouchInSpeedRightArrow(pixelX, pixelY)) {
         // Increase drive speed and redraw value
-        if (drive_speed < SPEED_FAST) {
-          drive_speed = (DriveSpeed)(drive_speed + 1);
+        if (driveSpeed < SPEED_FAST) {
+          driveSpeed = (DriveSpeed)(driveSpeed + 1);
           updateDriveSpeedDisplay();
         }
         delay(250);
       }
 
       // Check if touch is in speed left arrow
-      else if (isTouchInSpeedLeftArrow(pixel_x, pixel_y)) {
+      else if (isTouchInSpeedLeftArrow(pixelX, pixelY)) {
         // Decrease drive speed and redraw value
-        if (drive_speed > SPEED_SLOW) {
-          drive_speed = (DriveSpeed)(drive_speed - 1);
+        if (driveSpeed > SPEED_SLOW) {
+          driveSpeed = (DriveSpeed)(driveSpeed - 1);
           updateDriveSpeedDisplay();
         }
         delay(250);
@@ -1145,28 +1144,28 @@ void loop() {
   }
 
   // Check if in coutning state
-  if (ui_state == COUNTING) {
+  if (uiState == COUNTING) {
     //
-    if (millis() - countdown_start >= countdown_duration) {
-      ui_state = RUNNING;
-      current_path_index = 0;
-      current_direction = 0;
+    if (millis() - countdownStart >= countdownDuration) {
+      uiState = RUNNING;
+      currentPathIndex = 0;
+      currentDirection = 0;
       drawStartButton();
       //
     } else {
       // Calculate current countdown number
-      int current_number = (countdown_duration / 1000) - ((millis() - countdown_start) / 1000);
+      int currentNuber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
 
       // Only draw if number has changed
-      if (current_number != countdown_number) {
-        countdown_number = current_number;
+      if (currentNuber != countdownNumber) {
+        countdownNumber = currentNuber;
         drawStartButton();
       }
     }
   }
 
   // Check if in running state
-  if (ui_state == RUNNING) {
+  if (uiState == RUNNING) {
     // Executute bot movements
     executeMovement();
   }
