@@ -555,7 +555,7 @@ void drawSettingsButton() {
   settingsButtonX = startButtonX + startButtonWidth + buttonMargin;
 
   // Draw button background
-  tft.fillRect(settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight, ILI9341DARKGREY);
+  tft.fillRect(settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight, ILI9341_DARKGREY);
 
   // Calculate center position for icon
   int iconX = settingsButtonX + (settingsButtonWidth - 24) / 2;  // Center 20px wide icon
@@ -574,7 +574,7 @@ void drawSettingsMenu() {
 
   // Draw menu background
   tft.fillRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, settingsMenuBackgroundColor);
-  tft.drawRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, ILI9341WHITE);
+  tft.drawRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, ILI9341_WHITE);
 
   // Set text size and color
   tft.setTextSize(2);
