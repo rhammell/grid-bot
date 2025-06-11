@@ -562,7 +562,7 @@ void drawSettingsButton() {
   int iconY = settingsButtonY + (buttonHeight - 24) / 2;          // Center 20px tall icon
 
   // Draw the icon
-  tft.drawRGBBitmap(iconX, iconY, SETTINGSICONCOLOR, 24, 24);
+  tft.drawRGBBitmap(iconX, iconY, SETTINGS_ICON_COLOR, 24, 24);
 }
 
 void drawSettingsMenu() {
