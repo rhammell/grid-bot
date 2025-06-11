@@ -618,7 +618,7 @@ void drawSettingsMenu() {
 
   // Draw speed setting label
   String speedLabel = "Drive Speed";
-  int speedLabelX = settingsMenuX + (settingsMenuWidth - speedlabel.length() * charWidth) / 2;
+  int speedLabelX = settingsMenuX + (settingsMenuWidth - speedLabel.length() * charWidth) / 2;
   int speedLabelY = brightnessLabelY + 70;
   tft.setCursor(speedLabelX, speedLabelY);
   tft.print(speedLabel);
@@ -653,7 +653,7 @@ void drawSettingsMenu() {
 
   // Draw grid size setting label
   String distanceLabel = "Drive Distance";
-  int distanceLabelX = settingsMenuX + (settingsMenuWidth - distancelabel.length() * charWidth) / 2;
+  int distanceLabelX = settingsMenuX + (settingsMenuWidth - distanceLabel.length() * charWidth) / 2;
   int distanceLabelY = speedLabelY + 70;
   tft.setCursor(distanceLabelX, distanceLabelY);
   tft.print(distanceLabel);
