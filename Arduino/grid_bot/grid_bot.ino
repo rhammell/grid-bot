@@ -1154,11 +1154,11 @@ void loop() {
       //
     } else {
       // Calculate current countdown number
-      int currentNuber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
+      int currentNumber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
 
       // Only draw if number has changed
-      if (currentNuber != countdownNumber) {
-        countdownNumber = currentNuber;
+      if (currentNumber != countdownNumber) {
+        countdownNumber = currentNumber;
         drawStartButton();
       }
     }
