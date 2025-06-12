@@ -178,7 +178,7 @@ DriveDistance driveDistance = DISTANCE_STANDARD;
 // Grid size labels
 const char* DRIVE_DISTANCE_LABELS[] = { "Compact", "Standard", "Extended" };
 
-// Defound countdown state
+// Default countdown state
 unsigned long countdownStart = 0;
 const int countdownDuration = 5000;
 int countdownNumber = -1;
@@ -276,7 +276,7 @@ void resetGridValues() {
 }
 
 void initPath() {
-  // Inititilze array of path points
+  // Initialize array of path points
   path = new PathCell[numRows * numCols];
 
   // Set two initial default path points
@@ -886,7 +886,7 @@ void executeMovement() {
         // Redraw current cell
         drawGridCells(current.row, current.row, current.col, current.col);
 
-        // Check if aligned to target diretion
+        // Check if aligned to target direction
         if (currentDirection == targetDirection) {
 
           // Set driving flags
@@ -901,7 +901,7 @@ void executeMovement() {
         // Not aligned to target direction
         else {
 
-          // Set turing flags
+          // Set turning flags
           driveState = TURNING;
           moveStartTime = millis();
 
@@ -1207,7 +1207,7 @@ void loop() {
 
   // Check if in running state
   if (uiState == RUNNING) {
-    // Executute bot movements
+    // Execute bot movements
     executeMovement();
   }
 
