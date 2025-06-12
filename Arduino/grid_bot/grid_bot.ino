@@ -759,44 +759,85 @@ void updateDriveDistanceDisplay() {
   tft.print(distanceText);
 }
 
+bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {
+  return x >= rectX && x <= rectX + rectWidth && y >= rectY && y <= rectY + rectHeight;
+}
+
 bool isTouchInUndoButton(int x, int y) {
-  return x >= undoButtonX && x <= undoButtonX + undoButtonWidth && y >= undoButtonY && y <= undoButtonY + buttonHeight;
+  return isPointInRect(x, y, undoButtonX, undoButtonY, undoButtonWidth, buttonHeight);
 }
 
 bool isTouchInSettingsButton(int x, int y) {
-  return x >= settingsButtonX && x <= settingsButtonX + settingsButtonWidth && y >= settingsButtonY && y <= settingsButtonY + buttonHeight;
+  return isPointInRect(x, y, settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight);
 }
 
 bool isTouchInStartButton(int x, int y) {
-  return x >= startButtonX && x <= startButtonX + startButtonWidth && y >= startButtonY && y <= startButtonY + buttonHeight;
+  return isPointInRect(x, y, startButtonX, startButtonY, startButtonWidth, buttonHeight);
 }
 
 bool isTouchInGrid(int x, int y) {
-  return x >= offsetX && x < offsetX + gridWidth && y >= offsetY && y < offsetY + gridHeight;
+  // Subtract one to maintain previous < comparisons
+  return isPointInRect(x, y, offsetX, offsetY, gridWidth - 1, gridHeight - 1);
 }
 
 bool isTouchInBrightnessLeftArrow(int x, int y) {
-  return x >= brightnessLeftArrowX - settingsArrowPadding && x <= brightnessLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= brightnessArrowY - settingsArrowPadding && y <= brightnessArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    brightnessLeftArrowX - settingsArrowPadding,
+    brightnessArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 bool isTouchInBrightnessRightArrow(int x, int y) {
-  return x >= brightnessRightArrowX - settingsArrowPadding && x <= brightnessRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= brightnessArrowY - settingsArrowPadding && y <= brightnessArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    brightnessRightArrowX - settingsArrowPadding,
+    brightnessArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 bool isTouchInSizeLeftArrow(int x, int y) {
-  return x >= distanceLeftArrowX - settingsArrowPadding && x <= distanceLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= distanceArrowY - settingsArrowPadding && y <= distanceArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    distanceLeftArrowX - settingsArrowPadding,
+    distanceArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 bool isTouchInSizeRightArrow(int x, int y) {
-  return x >= distanceRightArrowX - settingsArrowPadding && x <= distanceRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= distanceArrowY - settingsArrowPadding && y <= distanceArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    distanceRightArrowX - settingsArrowPadding,
+    distanceArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 bool isTouchInSpeedLeftArrow(int x, int y) {
-  return x >= speedLeftArrowX - settingsArrowPadding && x <= speedLeftArrowX + settingsArrowWidth + settingsArrowPadding && y >= speedArrowY - settingsArrowPadding && y <= speedArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    speedLeftArrowX - settingsArrowPadding,
+    speedArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 bool isTouchInSpeedRightArrow(int x, int y) {
-  return x >= speedRightArrowX - settingsArrowPadding && x <= speedRightArrowX + settingsArrowWidth + settingsArrowPadding && y >= speedArrowY - settingsArrowPadding && y <= speedArrowY + settingsArrowHeight + settingsArrowPadding;
+  return isPointInRect(
+    x,
+    y,
+    speedRightArrowX - settingsArrowPadding,
+    speedArrowY - settingsArrowPadding,
+    settingsArrowWidth + settingsArrowPadding * 2,
+    settingsArrowHeight + settingsArrowPadding * 2);
 }
 
 // Function to calculate direction between two points
