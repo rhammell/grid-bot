@@ -55,8 +55,8 @@ uint16_t gridColor = ILI9341_DARKGREY;
 uint16_t selectableColor = tft.color565(75, 225, 75);
 uint16_t arrowColor = ILI9341_WHITE;
 
-// Init grid values array
-int** gridVals;
+// Grid values array
+bool** gridVals;
 
 // Path cell structure
 struct PathCell {
@@ -248,19 +248,23 @@ void setBrightness() {
 
 void initGrid() {
 
-  // Calculate grid size, dimensions, and offsets
+  // Calculate grid size based on available screen space
   int availableHeight = screenHeight - buttonHeight - 1 - buttonMargin;
   numRows = (availableHeight - 1) / cellSize;
-  numCols = ((screenWidth - 1) / cellSize) - (((screenWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
+  numCols = ((screenWidth - 1) / cellSize) -
+            (((screenWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
+
+  // Calculate grid dimensions and offsets
   gridWidth = cellSize * numCols;
   gridHeight = cellSize * numRows;
   offsetX = (screenWidth - gridWidth - 1) / 2;
-  offsetY = (screenHeight - gridHeight - 1 - buttonHeight - buttonMargin) / 2;
+  offsetY =
+    (screenHeight - gridHeight - 1 - buttonHeight - buttonMargin) / 2;
 
-  // Initialized 2D grid of cell values
-  gridVals = new int*[numRows];
+  // Initialize 2D grid of cell values
+  gridVals = new bool*[numRows];
   for (int i = 0; i < numRows; i++) {
-    gridVals[i] = new int[numCols];
+    gridVals[i] = new bool[numCols];
   }
 
   // Reset all grid values to 0
@@ -270,7 +274,7 @@ void initGrid() {
 void resetGridValues() {
   for (int i = 0; i < numRows; i++) {
     for (int j = 0; j < numCols; j++) {
-      gridVals[i][j] = 0;
+      gridVals[i][j] = false;
     }
   }
 }
@@ -300,12 +304,12 @@ void pathAdd(int row, int col) {
   pathLength += 1;
 
   // Update the grid value of point
-  gridVals[row][col] = 1;
+  gridVals[row][col] = true;
 }
 
 bool isSelectable(int row, int col) {
   // If cell is already selected, it's not selectable
-  if (gridVals[row][col] == 1) {
+  if (gridVals[row][col]) {
     return false;
   }
 
@@ -371,7 +375,7 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
       int color;
 
       // Check if cell is activated
-      if (gridVals[i][j] == 1) {
+      if (gridVals[i][j]) {
 
         if (uiState == RUNNING || uiState == COMPLETE) {
           for (int p = 0; p <= currentPathIndex; p++) {
