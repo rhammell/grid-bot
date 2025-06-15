@@ -225,6 +225,9 @@ void setup() {
   // Initialize grid values
   initGrid();
 
+  // Calculate positions and dimensions for UI elements
+  layoutUI();
+
   // Initialize path array with default points
   initPath();
 
@@ -321,6 +324,24 @@ PathCell lastPoint = path[pathLength - 1];
     (col == lastPoint.col && abs(row - lastPoint.row) == 1));
 
   return isAdjacent;
+}
+
+void layoutUI() {
+  // Calculate button row relative to grid
+  int y = offsetY + gridHeight + buttonMargin + 1;
+
+  // Undo button position
+  undoButton.setBounds(offsetX, y, undoButtonWidth, buttonHeight);
+
+  // Start button position and width
+  startButtonWidth = gridWidth - undoButtonWidth - buttonMargin -
+                     settingsButtonWidth - buttonMargin + 1;
+  int startX = undoButton.x + undoButton.width + buttonMargin;
+  startButton.setBounds(startX, y, startButtonWidth, buttonHeight);
+
+  // Settings button position
+  int settingsX = startButton.x + startButton.width + buttonMargin;
+  settingsButton.setBounds(settingsX, y, settingsButtonWidth, buttonHeight);
 }
 
 
@@ -478,19 +499,12 @@ void drawCellDirection(int row, int col, int nextRow, int nextCol) {
 }
 
 void drawUndoButton() {
-  int y = offsetY + gridHeight + buttonMargin + 1;
-  int x = offsetX;
-  undoButton.setBounds(x, y, undoButtonWidth, buttonHeight);
+  // Button bounds are precomputed in layoutUI()
   undoButton.drawIcon(tft, UNDO_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
 }
 
 void drawStartButton() {
-  int y = offsetY + gridHeight + buttonMargin + 1;
-  int x = undoButton.x + undoButton.width + buttonMargin;
-
-  // Calculate start button width
-  startButtonWidth = gridWidth - undoButtonWidth - buttonMargin - settingsButtonWidth - buttonMargin + 1;
-  startButton.setBounds(x, y, startButtonWidth, buttonHeight);
+  // Button bounds are precomputed in layoutUI()
 
   // Init color and text
   uint16_t currentColor;
@@ -534,7 +548,7 @@ void drawStartButton() {
 
   // Center text horizontally and vertically
   int textX = offsetX + (gridWidth - textWidth) / 2;
-  int textY = y + (buttonHeight - 16) / 2;  // 16 is character height at size 2
+  int textY = startButton.y + (buttonHeight - 16) / 2;  // 16 is char height at size 2
 
   // Draw text
   tft.setCursor(textX, textY);
@@ -542,10 +556,7 @@ void drawStartButton() {
 }
 
 void drawSettingsButton() {
-  // Calculate button x/y start
-  int y = offsetY + gridHeight + buttonMargin + 1;
-  int x = startButton.x + startButtonWidth + buttonMargin;
-  settingsButton.setBounds(x, y, settingsButtonWidth, buttonHeight);
+  // Button bounds are precomputed in layoutUI()
 
   // Draw button background
   settingsButton.drawIcon(tft, SETTINGS_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
