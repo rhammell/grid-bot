@@ -3,6 +3,7 @@
 #include <Adafruit_ILI9341.h>
 #include "TouchScreen.h"
 #include "icons.h"
+#include "ui_elements.h"
 
 // TFT Pins
 #define TFT_CS 17
@@ -74,18 +75,12 @@ int buttonMargin = 2;
 
 // Start button position params
 int startButtonWidth;
-int startButtonX;
-int startButtonY;
 
 // Undo button position params
 int undoButtonWidth = 36;
-int undoButtonX;
-int undoButtonY;
 
 // Settings button position params
 int settingsButtonWidth = 36;
-int settingsButtonX;
-int settingsButtonY;
 
 // Button display colors
 int buttonIdleColor = tft.color565(75, 75, 225);
@@ -93,6 +88,17 @@ int buttonCountingColor = tft.color565(240, 124, 36);
 int buttonRunningColor = tft.color565(255, 75, 75);
 int buttonCompleteColor = tft.color565(75, 255, 75);
 int buttonTextColor = ILI9341_WHITE;
+
+// UI elements
+UIButton undoButton;
+UIButton startButton;
+UIButton settingsButton;
+UIArrow brightnessLeftArrow;
+UIArrow brightnessRightArrow;
+UIArrow distanceLeftArrow;
+UIArrow distanceRightArrow;
+UIArrow speedLeftArrow;
+UIArrow speedRightArrow;
 
 // Settings menu position params
 int settingsMenuWidth;
@@ -110,25 +116,16 @@ int settingsArrowMarginX = 14;
 int brightnessValueX;
 int brightnessValueY;
 int brightnessValueWidth;
-int brightnessLeftArrowX;
-int brightnessRightArrowX;
-int brightnessArrowY;
 
 // Size arrow position params
 int distanceValueX;
 int distanceValueY;
 int distanceValueWidth;
-int distanceLeftArrowX;
-int distanceRightArrowX;
-int distanceArrowY;
 
 // Speed arrow position params
 int speedValueX;
 int speedValueY;
 int speedValueWidth;
-int speedLeftArrowX;
-int speedRightArrowX;
-int speedArrowY;
 
 // States
 enum UIState {
@@ -481,28 +478,19 @@ void drawCellDirection(int row, int col, int nextRow, int nextCol) {
 }
 
 void drawUndoButton() {
-  // Calculate button x/y start
-  undoButtonY = offsetY + gridHeight + buttonMargin + 1;
-  undoButtonX = offsetX;
-
-  // Draw button background
-  tft.fillRect(undoButtonX, undoButtonY, undoButtonWidth, buttonHeight, ILI9341_DARKGREY);
-
-  // Calculate center position for icon
-  int iconX = undoButtonX + (undoButtonWidth - 24) / 2;
-  int iconY = undoButtonY + (buttonHeight - 24) / 2;
-
-  // Draw the icon
-  tft.drawRGBBitmap(iconX, iconY, UNDO_ICON_COLOR, 24, 24);
+  int y = offsetY + gridHeight + buttonMargin + 1;
+  int x = offsetX;
+  undoButton.setBounds(x, y, undoButtonWidth, buttonHeight);
+  undoButton.drawIcon(tft, UNDO_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
 }
 
 void drawStartButton() {
-  // Calculate button x/y start
-  startButtonY = offsetY + gridHeight + buttonMargin + 1;
-  startButtonX = undoButtonX + undoButtonWidth + buttonMargin;
+  int y = offsetY + gridHeight + buttonMargin + 1;
+  int x = undoButton.x + undoButton.width + buttonMargin;
 
   // Calculate start button width
   startButtonWidth = gridWidth - undoButtonWidth - buttonMargin - settingsButtonWidth - buttonMargin + 1;
+  startButton.setBounds(x, y, startButtonWidth, buttonHeight);
 
   // Init color and text
   uint16_t currentColor;
@@ -534,7 +522,7 @@ void drawStartButton() {
   }
 
   // Draw button background
-  tft.fillRect(startButtonX, startButtonY, startButtonWidth, buttonHeight, currentColor);
+  startButton.drawFilled(tft, currentColor);
 
   // Set text properties
   tft.setTextColor(buttonTextColor);
@@ -546,7 +534,7 @@ void drawStartButton() {
 
   // Center text horizontally and vertically
   int textX = offsetX + (gridWidth - textWidth) / 2;
-  int textY = startButtonY + (buttonHeight - 16) / 2;  // 16 is character height at size 2
+  int textY = y + (buttonHeight - 16) / 2;  // 16 is character height at size 2
 
   // Draw text
   tft.setCursor(textX, textY);
@@ -555,18 +543,12 @@ void drawStartButton() {
 
 void drawSettingsButton() {
   // Calculate button x/y start
-  settingsButtonY = offsetY + gridHeight + buttonMargin + 1;
-  settingsButtonX = startButtonX + startButtonWidth + buttonMargin;
+  int y = offsetY + gridHeight + buttonMargin + 1;
+  int x = startButton.x + startButtonWidth + buttonMargin;
+  settingsButton.setBounds(x, y, settingsButtonWidth, buttonHeight);
 
   // Draw button background
-  tft.fillRect(settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight, ILI9341_DARKGREY);
-
-  // Calculate center position for icon
-  int iconX = settingsButtonX + (settingsButtonWidth - 24) / 2;  // Center 20px wide icon
-  int iconY = settingsButtonY + (buttonHeight - 24) / 2;          // Center 20px tall icon
-
-  // Draw the icon
-  tft.drawRGBBitmap(iconX, iconY, SETTINGS_ICON_COLOR, 24, 24);
+  settingsButton.drawIcon(tft, SETTINGS_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
 }
 
 void drawSettingsMenu() {
@@ -593,23 +575,13 @@ void drawSettingsMenu() {
   tft.print(brightnessLabel);
 
   // Calculate brightness arrow positions
-  brightnessLeftArrowX = settingsMenuX + settingsArrowMarginX;
-  brightnessRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  brightnessArrowY = brightnessLabelY + 20;
-
-  // Draw left arrow button
-  tft.fillTriangle(
-    brightnessLeftArrowX, brightnessArrowY + settingsArrowHeight / 2,
-    brightnessLeftArrowX + settingsArrowWidth, brightnessArrowY + settingsArrowHeight / 4,
-    brightnessLeftArrowX + settingsArrowWidth, brightnessArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
-
-  // Draw right arrow button
-  tft.fillTriangle(
-    brightnessRightArrowX + settingsArrowWidth, brightnessArrowY + settingsArrowHeight / 2,
-    brightnessRightArrowX, brightnessArrowY + settingsArrowHeight / 4,
-    brightnessRightArrowX, brightnessArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
+  int brightnessArrowX1 = settingsMenuX + settingsArrowMarginX;
+  int brightnessArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  int brightnessArrowY = brightnessLabelY + 20;
+  brightnessLeftArrow.set(ARROW_LEFT, brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
+  brightnessRightArrow.set(ARROW_RIGHT, brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
+  brightnessLeftArrow.draw(tft, settingsMenuTextColor);
+  brightnessRightArrow.draw(tft, settingsMenuTextColor);
 
   // Calculate and store brightness value position
   int maxBrightnessChars = 4;
@@ -628,23 +600,13 @@ void drawSettingsMenu() {
   tft.print(speedLabel);
 
   // Calculate size arrow positions
-  speedLeftArrowX = settingsMenuX + settingsArrowMarginX;
-  speedRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  speedArrowY = speedLabelY + 20;
-
-  // Draw left arrow button
-  tft.fillTriangle(
-    speedLeftArrowX, speedArrowY + settingsArrowHeight / 2,
-    speedLeftArrowX + settingsArrowWidth, speedArrowY + settingsArrowHeight / 4,
-    speedLeftArrowX + settingsArrowWidth, speedArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
-
-  // Draw right arrow button
-  tft.fillTriangle(
-    speedRightArrowX + settingsArrowWidth, speedArrowY + settingsArrowHeight / 2,
-    speedRightArrowX, speedArrowY + settingsArrowHeight / 4,
-    speedRightArrowX, speedArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
+  int speedArrowX1 = settingsMenuX + settingsArrowMarginX;
+  int speedArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  int speedArrowY = speedLabelY + 20;
+  speedLeftArrow.set(ARROW_LEFT, speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
+  speedRightArrow.set(ARROW_RIGHT, speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
+  speedLeftArrow.draw(tft, settingsMenuTextColor);
+  speedRightArrow.draw(tft, settingsMenuTextColor);
 
   // Calculate and store speed value position
   int maxSpeedChars = 8;  // "Standard" is the longest label
@@ -663,23 +625,13 @@ void drawSettingsMenu() {
   tft.print(distanceLabel);
 
   // Calculate size arrow positions
-  distanceLeftArrowX = settingsMenuX + settingsArrowMarginX;
-  distanceRightArrowX = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  distanceArrowY = distanceLabelY + 20;
-
-  // Draw left arrow button
-  tft.fillTriangle(
-    distanceLeftArrowX, distanceArrowY + settingsArrowHeight / 2,
-    distanceLeftArrowX + settingsArrowWidth, distanceArrowY + settingsArrowHeight / 4,
-    distanceLeftArrowX + settingsArrowWidth, distanceArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
-
-  // Draw right arrow button
-  tft.fillTriangle(
-    distanceRightArrowX + settingsArrowWidth, distanceArrowY + settingsArrowHeight / 2,
-    distanceRightArrowX, distanceArrowY + settingsArrowHeight / 4,
-    distanceRightArrowX, distanceArrowY + (3 * settingsArrowHeight) / 4,
-    settingsMenuTextColor);
+  int distanceArrowX1 = settingsMenuX + settingsArrowMarginX;
+  int distanceArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
+  int distanceArrowY = distanceLabelY + 20;
+  distanceLeftArrow.set(ARROW_LEFT, distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
+  distanceRightArrow.set(ARROW_RIGHT, distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
+  distanceLeftArrow.draw(tft, settingsMenuTextColor);
+  distanceRightArrow.draw(tft, settingsMenuTextColor);
 
   // Calculate and store size value position
   int maxSizeChars = 8;  // "Standard" is the longest label
@@ -768,15 +720,15 @@ bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHe
 }
 
 bool isTouchInUndoButton(int x, int y) {
-  return isPointInRect(x, y, undoButtonX, undoButtonY, undoButtonWidth, buttonHeight);
+  return undoButton.contains(x, y);
 }
 
 bool isTouchInSettingsButton(int x, int y) {
-  return isPointInRect(x, y, settingsButtonX, settingsButtonY, settingsButtonWidth, buttonHeight);
+  return settingsButton.contains(x, y);
 }
 
 bool isTouchInStartButton(int x, int y) {
-  return isPointInRect(x, y, startButtonX, startButtonY, startButtonWidth, buttonHeight);
+  return startButton.contains(x, y);
 }
 
 bool isTouchInGrid(int x, int y) {
@@ -785,63 +737,27 @@ bool isTouchInGrid(int x, int y) {
 }
 
 bool isTouchInBrightnessLeftArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    brightnessLeftArrowX - settingsArrowPadding,
-    brightnessArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return brightnessLeftArrow.contains(x, y, settingsArrowPadding);
 }
 
 bool isTouchInBrightnessRightArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    brightnessRightArrowX - settingsArrowPadding,
-    brightnessArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return brightnessRightArrow.contains(x, y, settingsArrowPadding);
 }
 
 bool isTouchInSizeLeftArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    distanceLeftArrowX - settingsArrowPadding,
-    distanceArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return distanceLeftArrow.contains(x, y, settingsArrowPadding);
 }
 
 bool isTouchInSizeRightArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    distanceRightArrowX - settingsArrowPadding,
-    distanceArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return distanceRightArrow.contains(x, y, settingsArrowPadding);
 }
 
 bool isTouchInSpeedLeftArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    speedLeftArrowX - settingsArrowPadding,
-    speedArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return speedLeftArrow.contains(x, y, settingsArrowPadding);
 }
 
 bool isTouchInSpeedRightArrow(int x, int y) {
-  return isPointInRect(
-    x,
-    y,
-    speedRightArrowX - settingsArrowPadding,
-    speedArrowY - settingsArrowPadding,
-    settingsArrowWidth + settingsArrowPadding * 2,
-    settingsArrowHeight + settingsArrowPadding * 2);
+  return speedRightArrow.contains(x, y, settingsArrowPadding);
 }
 
 // Function to calculate direction between two points
