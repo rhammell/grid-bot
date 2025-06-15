@@ -90,9 +90,9 @@ int buttonCompleteColor = tft.color565(75, 255, 75);
 int buttonTextColor = ILI9341_WHITE;
 
 // UI elements
-UIButton undoButton;
-UIButton startButton;
-UIButton settingsButton;
+UIIconButton undoButton;
+UITextButton startButton;
+UIIconButton settingsButton;
 UIArrow brightnessLeftArrow;
 UIArrow brightnessRightArrow;
 UIArrow distanceLeftArrow;
@@ -330,16 +330,23 @@ void layoutUI() {
 
   // Undo button position
   undoButton.setBounds(offsetX, y, undoButtonWidth, buttonHeight);
+  undoButton.setIcon(UNDO_ICON, 24, 24);
+  undoButton.setBgColor(ILI9341_DARKGREY);
 
   // Start button position and width
   startButtonWidth = gridWidth - undoButtonWidth - buttonMargin -
                      settingsButtonWidth - buttonMargin + 1;
   int startX = undoButton.x + undoButton.width + buttonMargin;
   startButton.setBounds(startX, y, startButtonWidth, buttonHeight);
+  startButton.setBgColor(buttonIdleColor);
+  startButton.setTextColor(buttonTextColor);
+  startButton.setLabel("Start");
 
   // Settings button position
   int settingsX = startButton.x + startButton.width + buttonMargin;
   settingsButton.setBounds(settingsX, y, settingsButtonWidth, buttonHeight);
+  settingsButton.setIcon(SETTINGS_ICON, 24, 24);
+  settingsButton.setBgColor(ILI9341_DARKGREY);
 }
 
 
@@ -498,7 +505,7 @@ void drawCellDirection(int row, int col, int nextRow, int nextCol) {
 
 void drawUndoButton() {
   // Button bounds are precomputed in layoutUI()
-  undoButton.drawIcon(tft, UNDO_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
+  undoButton.draw(tft);
 }
 
 void drawStartButton() {
@@ -533,31 +540,16 @@ void drawStartButton() {
       break;
   }
 
-  // Draw button background
-  startButton.drawFilled(tft, currentColor);
-
-  // Set text properties
-  tft.setTextColor(buttonTextColor);
-  tft.setTextSize(2);
-
-  // Calculate text width (6 pixels per character at size 2)
-  int charWidth = 6 * 2;  // Each character is 6 pixels * text size 2
-  int textWidth = buttonText.length() * charWidth;
-
-  // Center text horizontally and vertically
-  int textX = offsetX + (gridWidth - textWidth) / 2;
-  int textY = startButton.y + (buttonHeight - 16) / 2;  // 16 is char height at size 2
-
-  // Draw text
-  tft.setCursor(textX, textY);
-  tft.print(buttonText);
+  startButton.setLabel(buttonText);
+  startButton.setBgColor(currentColor);
+  startButton.draw(tft);
 }
 
 void drawSettingsButton() {
   // Button bounds are precomputed in layoutUI()
 
   // Draw button background
-  settingsButton.drawIcon(tft, SETTINGS_ICON_COLOR, 24, 24, ILI9341_DARKGREY);
+  settingsButton.draw(tft);
 }
 
 void drawSettingsMenu() {
