@@ -225,14 +225,12 @@ void setup() {
   // Initialize grid values
   initGrid();
 
-  // Calculate positions and dimensions for UI elements
-  layoutUI();
-
   // Initialize path array with default points
   initPath();
 
-  // Draw UI elements
-  drawUserInterface();
+  // Layout and draw UI
+  layoutUI();
+  drawUI();
 }
 
 void setBrightness() {
@@ -345,7 +343,7 @@ void layoutUI() {
 }
 
 
-void drawUserInterface() {
+void drawUI() {
   // Draw all UI elements
   drawGridLines();
   drawGridCells(0, numRows - 1, 0, numCols - 1);
@@ -988,7 +986,7 @@ void loop() {
 
         // Change back to idle state and redraw main interface
         uiState = IDLE;
-        drawUserInterface();
+        drawUI();
       }
 
       // Debounce delay
