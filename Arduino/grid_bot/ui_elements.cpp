@@ -30,6 +30,14 @@ void UIButton::drawLabel(Adafruit_ILI9341 &tft,
   tft.print(label);
 }
 
+void UITextButton::draw(Adafruit_ILI9341 &tft) const {
+  drawLabel(tft, label, bgColor, textColor);
+}
+
+void UIIconButton::draw(Adafruit_ILI9341 &tft) const {
+  drawIcon(tft, icon, iconWidth, iconHeight, bgColor);
+}
+
 void UIArrow::draw(Adafruit_ILI9341 &tft, uint16_t color) const {
   if (dir == ARROW_LEFT) {
     tft.fillTriangle(
