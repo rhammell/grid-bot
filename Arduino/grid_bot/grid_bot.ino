@@ -719,45 +719,9 @@ bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHe
   return x >= rectX && x <= rectX + rectWidth && y >= rectY && y <= rectY + rectHeight;
 }
 
-bool isTouchInUndoButton(int x, int y) {
-  return undoButton.contains(x, y);
-}
-
-bool isTouchInSettingsButton(int x, int y) {
-  return settingsButton.contains(x, y);
-}
-
-bool isTouchInStartButton(int x, int y) {
-  return startButton.contains(x, y);
-}
-
 bool isTouchInGrid(int x, int y) {
   // Subtract one to maintain previous < comparisons
   return isPointInRect(x, y, offsetX, offsetY, gridWidth - 1, gridHeight - 1);
-}
-
-bool isTouchInBrightnessLeftArrow(int x, int y) {
-  return brightnessLeftArrow.contains(x, y, settingsArrowPadding);
-}
-
-bool isTouchInBrightnessRightArrow(int x, int y) {
-  return brightnessRightArrow.contains(x, y, settingsArrowPadding);
-}
-
-bool isTouchInSizeLeftArrow(int x, int y) {
-  return distanceLeftArrow.contains(x, y, settingsArrowPadding);
-}
-
-bool isTouchInSizeRightArrow(int x, int y) {
-  return distanceRightArrow.contains(x, y, settingsArrowPadding);
-}
-
-bool isTouchInSpeedLeftArrow(int x, int y) {
-  return speedLeftArrow.contains(x, y, settingsArrowPadding);
-}
-
-bool isTouchInSpeedRightArrow(int x, int y) {
-  return speedRightArrow.contains(x, y, settingsArrowPadding);
 }
 
 // Function to calculate direction between two points
@@ -935,7 +899,7 @@ void loop() {
     Serial.println(" ");
 
     // Check if start button touched while not in settings state
-    if (isTouchInStartButton(pixelX, pixelY) && uiState != SETTINGS) {
+    if (startButton.contains(pixelX, pixelY) && uiState != SETTINGS) {
       Serial.println("Start button touched");
 
       // Process touch based on current state
@@ -982,7 +946,7 @@ void loop() {
     }
 
     // Check if undo button touched while in idle state
-    else if (isTouchInUndoButton(pixelX, pixelY) && uiState == IDLE) {
+    else if (undoButton.contains(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Undo button touched");
 
       // Reset grid values and path to default cells
@@ -997,7 +961,7 @@ void loop() {
     }
 
     // Check if settings button touched
-    else if (isTouchInSettingsButton(pixelX, pixelY)) {
+    else if (settingsButton.contains(pixelX, pixelY)) {
       Serial.println("Settings button touched");
 
       // Check if in idle state
@@ -1042,7 +1006,7 @@ void loop() {
     else if (uiState == SETTINGS) {
 
       // Check if touch is in brightness right arrow
-      if (isTouchInBrightnessRightArrow(pixelX, pixelY)) {
+      if (brightnessRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Increase brightness and redraw value
         displayBrightness = min(100, displayBrightness + 10);
         setBrightness();
@@ -1051,7 +1015,7 @@ void loop() {
       }
 
       // Check if touch is in brightness left arrow
-      else if (isTouchInBrightnessLeftArrow(pixelX, pixelY)) {
+      else if (brightnessLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Decrease brightness and redraw value
         displayBrightness = max(10, displayBrightness - 10);
         setBrightness();
@@ -1060,7 +1024,7 @@ void loop() {
       }
 
       // Check if touch is in size right arrow
-      else if (isTouchInSizeRightArrow(pixelX, pixelY)) {
+      else if (distanceRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Increase drive speed and redraw value
         if (driveDistance < DISTANCE_EXTENDED) {
           driveDistance = (DriveDistance)(driveDistance + 1);
@@ -1070,7 +1034,7 @@ void loop() {
       }
 
       // Check if touch is in size left arrow
-      else if (isTouchInSizeLeftArrow(pixelX, pixelY)) {
+      else if (distanceLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Decrease drive distance and redraw value
         if (driveDistance > DISTANCE_COMPACT) {
           driveDistance = (DriveDistance)(driveDistance - 1);
@@ -1080,7 +1044,7 @@ void loop() {
       }
 
       // Check if touch is in speed right arrow
-      else if (isTouchInSpeedRightArrow(pixelX, pixelY)) {
+      else if (speedRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Increase drive speed and redraw value
         if (driveSpeed < SPEED_FAST) {
           driveSpeed = (DriveSpeed)(driveSpeed + 1);
@@ -1090,7 +1054,7 @@ void loop() {
       }
 
       // Check if touch is in speed left arrow
-      else if (isTouchInSpeedLeftArrow(pixelX, pixelY)) {
+      else if (speedLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
         // Decrease drive speed and redraw value
         if (driveSpeed > SPEED_SLOW) {
           driveSpeed = (DriveSpeed)(driveSpeed - 1);
