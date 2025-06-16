@@ -108,9 +108,9 @@ int settingsArrowHeight = 30;
 int settingsArrowMarginX = 14;
 
 // Replace individual parameters with class instances
-UIValueDisplay brightnessValue;
-UIValueDisplay distanceValue;
-UIValueDisplay speedValue;
+UISettingsValue brightnessValue;
+UISettingsValue distanceValue;
+UISettingsValue speedValue;
 
 // States
 enum UIState {

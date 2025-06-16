@@ -86,7 +86,7 @@ public:
   void draw(Adafruit_ILI9341 &tft) const override;
 };
 
-class UIValueDisplay {
+class UISettingsValue {
 public:
     int x;
     int y;
@@ -96,7 +96,7 @@ public:
     uint8_t textSize;
     String value;
 
-    UIValueDisplay() : x(0), y(0), width(0),
+    UISettingsValue() : x(0), y(0), width(0),
                        backgroundColor(ILI9341_DARKGREY),
                        textColor(ILI9341_WHITE),
                        textSize(2),
