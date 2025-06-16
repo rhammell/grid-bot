@@ -1,41 +1,30 @@
 #include "ui_elements.h"
 
-void UIButton::drawFilled(Adafruit_ILI9341 &tft, uint16_t color) const {
-  tft.fillRect(x, y, width, height, color);
+// This helper is still useful for subclasses
+void UIButton::draw(Adafruit_ILI9341 &tft) const {
+  tft.fillRect(x, y, width, height, bgColor);
 }
 
-void UIButton::drawIcon(Adafruit_ILI9341 &tft,
-                        const uint16_t *icon,
-                        int iconWidth,
-                        int iconHeight,
-                        uint16_t bgColor) const {
-  drawFilled(tft, bgColor);
-  int iconX = x + (width - iconWidth) / 2;
-  int iconY = y + (height - iconHeight) / 2;
-  tft.drawRGBBitmap(iconX, iconY, icon, iconWidth, iconHeight);
-}
+// Implementation is moved here. It now uses member variables.
+void UITextButton::draw(Adafruit_ILI9341 &tft) const {
+  UIButton::draw(tft); // Draw the background first!
 
-void UIButton::drawLabel(Adafruit_ILI9341 &tft,
-                         const String &label,
-                         uint16_t bgColor,
-                         uint16_t textColor) const {
-  drawFilled(tft, bgColor);
   tft.setTextColor(textColor);
-  tft.setTextSize(2);
-  int charWidth = 6 * 2;  // Character width at text size 2
+  tft.setTextSize(textSize);
+  int charWidth = 6 * textSize;
   int textWidth = label.length() * charWidth;
   int textX = x + (width - textWidth) / 2;
-  int textY = y + (height - 16) / 2;
+  int textY = y + (height - (8 * textSize)) / 2;
   tft.setCursor(textX, textY);
   tft.print(label);
 }
 
-void UITextButton::draw(Adafruit_ILI9341 &tft) const {
-  drawLabel(tft, label, bgColor, textColor);
-}
-
 void UIIconButton::draw(Adafruit_ILI9341 &tft) const {
-  drawIcon(tft, icon, iconWidth, iconHeight, bgColor);
+  UIButton::draw(tft);
+
+  int iconX = x + (width - iconWidth) / 2;
+  int iconY = y + (height - iconHeight) / 2;
+  tft.drawRGBBitmap(iconX, iconY, icon, iconWidth, iconHeight);
 }
 
 void UIArrow::draw(Adafruit_ILI9341 &tft, uint16_t color) const {

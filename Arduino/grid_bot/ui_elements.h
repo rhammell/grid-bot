@@ -4,6 +4,7 @@
 #include <Adafruit_ILI9341.h>
 #include <Arduino.h>
 
+// Base class now only contains what is common to ALL buttons.
 class UIButton {
 public:
   int x;
@@ -27,31 +28,24 @@ public:
 
   void setBgColor(uint16_t color) { bgColor = color; }
 
-  void drawFilled(Adafruit_ILI9341 &tft, uint16_t color) const;
-
-  void drawIcon(Adafruit_ILI9341 &tft,
-                const uint16_t *icon,
-                int iconWidth,
-                int iconHeight,
-                uint16_t bgColor) const;
-
-  void drawLabel(Adafruit_ILI9341 &tft,
-                 const String &label,
-                 uint16_t bgColor,
-                 uint16_t textColor) const;
+  // The base draw method is now virtual.
+  virtual void draw(Adafruit_ILI9341 &tft) const;
 };
 
 class UITextButton : public UIButton {
 public:
   String label;
   uint16_t textColor;
+  uint8_t textSize;
 
-  UITextButton() : label(""), textColor(0) {}
+  UITextButton() : label(""), textColor(0), textSize(2) {}
 
   void setLabel(const String &l) { label = l; }
   void setTextColor(uint16_t c) { textColor = c; }
+  void setTextSize(uint8_t size) { textSize = size; }
 
-  void draw(Adafruit_ILI9341 &tft) const;
+  // This is the primary drawing method for this class.
+  void draw(Adafruit_ILI9341 &tft) const override;
 };
 
 class UIIconButton : public UIButton {
@@ -68,7 +62,8 @@ public:
     iconHeight = h;
   }
 
-  void draw(Adafruit_ILI9341 &tft) const;
+  // This is the primary drawing method for this class.
+  void draw(Adafruit_ILI9341 &tft) const override;
 };
 
 enum ArrowDirection { ARROW_LEFT, ARROW_RIGHT };

@@ -13,7 +13,6 @@
 
 // TFT display object
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
-///Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCK, TFT_RST, TFT_MISO);
 
 // Touchscreen Pins
 #define YP A4  // must be an analog pin, use "An" notation!
@@ -72,9 +71,6 @@ int pathLength = 0;
 // Button dimension values
 int buttonHeight = 36;
 int buttonMargin = 2;
-
-// Start button position params
-int startButtonWidth;
 
 // Undo button position params
 int undoButtonWidth = 36;
@@ -334,12 +330,13 @@ void layoutUI() {
   undoButton.setBgColor(ILI9341_DARKGREY);
 
   // Start button position and width
-  startButtonWidth = gridWidth - undoButtonWidth - buttonMargin -
+  int startButtonWidth = gridWidth - undoButtonWidth - buttonMargin -
                      settingsButtonWidth - buttonMargin + 1;
   int startX = undoButton.x + undoButton.width + buttonMargin;
   startButton.setBounds(startX, y, startButtonWidth, buttonHeight);
   startButton.setBgColor(buttonIdleColor);
   startButton.setTextColor(buttonTextColor);
+  startButton.setTextSize(2);
   startButton.setLabel("Start");
 
   // Settings button position
@@ -348,7 +345,6 @@ void layoutUI() {
   settingsButton.setIcon(SETTINGS_ICON, 24, 24);
   settingsButton.setBgColor(ILI9341_DARKGREY);
 }
-
 
 void drawUI() {
   // Draw all UI elements
