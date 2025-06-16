@@ -27,18 +27,25 @@ void UIIconButton::draw(Adafruit_ILI9341 &tft) const {
   tft.drawRGBBitmap(iconX, iconY, icon, iconWidth, iconHeight);
 }
 
-void UIArrow::draw(Adafruit_ILI9341 &tft, uint16_t color) const {
+void UIArrow::draw(Adafruit_ILI9341 &tft) const {
+  // Draw the background first
+  UIButton::draw(tft);
+
+  // Calculate the triangle points to be centered within the button bounds
+  int centerX = x + width / 2;
+  int centerY = y + height / 2;
+
   if (dir == ARROW_LEFT) {
     tft.fillTriangle(
-        x, y + height / 2,
-        x + width, y + height / 4,
-        x + width, y + (3 * height) / 4,
-        color);
+        x + width - triangleWidth, centerY,  // Right point
+        x + width, y + (height - triangleHeight) / 2,  // Top point
+        x + width, y + (height + triangleHeight) / 2,  // Bottom point
+        bgColor);  // Use the button's background color for the arrow
   } else {
     tft.fillTriangle(
-        x + width, y + height / 2,
-        x, y + height / 4,
-        x, y + (3 * height) / 4,
-        color);
+        x + triangleWidth, centerY,  // Left point
+        x, y + (height - triangleHeight) / 2,  // Top point
+        x, y + (height + triangleHeight) / 2,  // Bottom point
+        bgColor);  // Use the button's background color for the arrow
   }
 }

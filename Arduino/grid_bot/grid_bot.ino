@@ -575,10 +575,17 @@ void drawSettingsMenu() {
   int brightnessArrowX1 = settingsMenuX + settingsArrowMarginX;
   int brightnessArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
   int brightnessArrowY = brightnessLabelY + 20;
-  brightnessLeftArrow.set(ARROW_LEFT, brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
-  brightnessRightArrow.set(ARROW_RIGHT, brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
-  brightnessLeftArrow.draw(tft, settingsMenuTextColor);
-  brightnessRightArrow.draw(tft, settingsMenuTextColor);
+  brightnessLeftArrow.setBounds(brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
+  brightnessLeftArrow.setDirection(ARROW_LEFT);
+  brightnessLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  brightnessLeftArrow.setBgColor(settingsMenuTextColor);
+  brightnessLeftArrow.draw(tft);
+
+  brightnessRightArrow.setBounds(brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
+  brightnessRightArrow.setDirection(ARROW_RIGHT);
+  brightnessRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  brightnessRightArrow.setBgColor(settingsMenuTextColor);
+  brightnessRightArrow.draw(tft);
 
   // Calculate and store brightness value position
   int maxBrightnessChars = 4;
@@ -600,10 +607,17 @@ void drawSettingsMenu() {
   int speedArrowX1 = settingsMenuX + settingsArrowMarginX;
   int speedArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
   int speedArrowY = speedLabelY + 20;
-  speedLeftArrow.set(ARROW_LEFT, speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
-  speedRightArrow.set(ARROW_RIGHT, speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
-  speedLeftArrow.draw(tft, settingsMenuTextColor);
-  speedRightArrow.draw(tft, settingsMenuTextColor);
+  speedLeftArrow.setBounds(speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
+  speedLeftArrow.setDirection(ARROW_LEFT);
+  speedLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  speedLeftArrow.setBgColor(settingsMenuTextColor);
+  speedLeftArrow.draw(tft);
+
+  speedRightArrow.setBounds(speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
+  speedRightArrow.setDirection(ARROW_RIGHT);
+  speedRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  speedRightArrow.setBgColor(settingsMenuTextColor);
+  speedRightArrow.draw(tft);
 
   // Calculate and store speed value position
   int maxSpeedChars = 8;  // "Standard" is the longest label
@@ -625,10 +639,17 @@ void drawSettingsMenu() {
   int distanceArrowX1 = settingsMenuX + settingsArrowMarginX;
   int distanceArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
   int distanceArrowY = distanceLabelY + 20;
-  distanceLeftArrow.set(ARROW_LEFT, distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
-  distanceRightArrow.set(ARROW_RIGHT, distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
-  distanceLeftArrow.draw(tft, settingsMenuTextColor);
-  distanceRightArrow.draw(tft, settingsMenuTextColor);
+  distanceLeftArrow.setBounds(distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
+  distanceLeftArrow.setDirection(ARROW_LEFT);
+  distanceLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  distanceLeftArrow.setBgColor(settingsMenuTextColor);
+  distanceLeftArrow.draw(tft);
+
+  distanceRightArrow.setBounds(distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
+  distanceRightArrow.setDirection(ARROW_RIGHT);
+  distanceRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
+  distanceRightArrow.setBgColor(settingsMenuTextColor);
+  distanceRightArrow.draw(tft);
 
   // Calculate and store size value position
   int maxSizeChars = 8;  // "Standard" is the longest label
@@ -1003,7 +1024,7 @@ void loop() {
     else if (uiState == SETTINGS) {
 
       // Check if touch is in brightness right arrow
-      if (brightnessRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
+      if (brightnessRightArrow.contains(pixelX, pixelY)) {
         // Increase brightness and redraw value
         displayBrightness = min(100, displayBrightness + 10);
         setBrightness();
@@ -1012,7 +1033,7 @@ void loop() {
       }
 
       // Check if touch is in brightness left arrow
-      else if (brightnessLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
+      else if (brightnessLeftArrow.contains(pixelX, pixelY)) {
         // Decrease brightness and redraw value
         displayBrightness = max(10, displayBrightness - 10);
         setBrightness();
@@ -1021,8 +1042,8 @@ void loop() {
       }
 
       // Check if touch is in size right arrow
-      else if (distanceRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
-        // Increase drive speed and redraw value
+      else if (distanceRightArrow.contains(pixelX, pixelY)) {
+        // Increase drive distance and redraw value
         if (driveDistance < DISTANCE_EXTENDED) {
           driveDistance = (DriveDistance)(driveDistance + 1);
           updateDriveDistanceDisplay();
@@ -1031,7 +1052,7 @@ void loop() {
       }
 
       // Check if touch is in size left arrow
-      else if (distanceLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
+      else if (distanceLeftArrow.contains(pixelX, pixelY)) {
         // Decrease drive distance and redraw value
         if (driveDistance > DISTANCE_COMPACT) {
           driveDistance = (DriveDistance)(driveDistance - 1);
@@ -1041,7 +1062,7 @@ void loop() {
       }
 
       // Check if touch is in speed right arrow
-      else if (speedRightArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
+      else if (speedRightArrow.contains(pixelX, pixelY)) {
         // Increase drive speed and redraw value
         if (driveSpeed < SPEED_FAST) {
           driveSpeed = (DriveSpeed)(driveSpeed + 1);
@@ -1051,7 +1072,7 @@ void loop() {
       }
 
       // Check if touch is in speed left arrow
-      else if (speedLeftArrow.contains(pixelX, pixelY, settingsArrowPadding)) {
+      else if (speedLeftArrow.contains(pixelX, pixelY)) {
         // Decrease drive speed and redraw value
         if (driveSpeed > SPEED_SLOW) {
           driveSpeed = (DriveSpeed)(driveSpeed - 1);

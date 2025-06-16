@@ -68,30 +68,22 @@ public:
 
 enum ArrowDirection { ARROW_LEFT, ARROW_RIGHT };
 
-class UIArrow {
+class UIArrow : public UIButton {
 public:
-  int x;
-  int y;
-  int width;
-  int height;
   ArrowDirection dir;
+  int triangleWidth;   // New attribute for explicit triangle width
+  int triangleHeight;  // New attribute for explicit triangle height
 
-  UIArrow() : x(0), y(0), width(0), height(0), dir(ARROW_LEFT) {}
+  UIArrow() : dir(ARROW_LEFT), triangleWidth(12), triangleHeight(18) {}  // Default values based on previous 60% of 20x30
 
-  void set(ArrowDirection d, int bx, int by, int w, int h) {
-    dir = d;
-    x = bx;
-    y = by;
-    width = w;
-    height = h;
+  void setDirection(ArrowDirection d) { dir = d; }
+  void setTriangleSize(int width, int height) {  // New setter method
+    triangleWidth = width;
+    triangleHeight = height;
   }
 
-  bool contains(int px, int py, int padding = 0) const {
-    return px >= x - padding && px <= x + width + padding &&
-           py >= y - padding && py <= y + height + padding;
-  }
-
-  void draw(Adafruit_ILI9341 &tft, uint16_t color) const;
+  // Override the draw method to draw the arrow
+  void draw(Adafruit_ILI9341 &tft) const override;
 };
 
 #endif
