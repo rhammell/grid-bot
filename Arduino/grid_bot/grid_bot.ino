@@ -105,23 +105,12 @@ int settingsMenuY;
 // Settings menu arrow params
 int settingsArrowWidth = 20;
 int settingsArrowHeight = 30;
-int settingsArrowPadding = 10;
 int settingsArrowMarginX = 14;
 
-// Brightness arrow position params
-int brightnessValueX;
-int brightnessValueY;
-int brightnessValueWidth;
-
-// Size arrow position params
-int distanceValueX;
-int distanceValueY;
-int distanceValueWidth;
-
-// Speed arrow position params
-int speedValueX;
-int speedValueY;
-int speedValueWidth;
+// Replace individual parameters with class instances
+UIValueDisplay brightnessValue;
+UIValueDisplay distanceValue;
+UIValueDisplay speedValue;
 
 // States
 enum UIState {
@@ -587,14 +576,17 @@ void drawSettingsMenu() {
   brightnessRightArrow.setBgColor(settingsMenuTextColor);
   brightnessRightArrow.draw(tft);
 
-  // Calculate and store brightness value position
+  // Set up brightness value display
   int maxBrightnessChars = 4;
-  brightnessValueY = brightnessArrowY + (settingsArrowHeight - 16) / 2;
-  brightnessValueWidth = maxBrightnessChars * charWidth;
-  brightnessValueX = settingsMenuX + (settingsMenuWidth - brightnessValueWidth) / 2 + 2;
-
-  // Draw brightness value
-  updateBrightnessDisplay();
+  brightnessValue.setPosition(
+      settingsMenuX + (settingsMenuWidth - maxBrightnessChars * 12) / 2 + 2,
+      brightnessArrowY + (settingsArrowHeight - 16) / 2,
+      maxBrightnessChars * 12
+  );
+  brightnessValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
+  brightnessValue.setTextSize(2);
+  brightnessValue.setValue(String(displayBrightness) + "%");
+  brightnessValue.draw(tft);
 
   // Draw speed setting label
   String speedLabel = "Drive Speed";
@@ -621,12 +613,15 @@ void drawSettingsMenu() {
 
   // Calculate and store speed value position
   int maxSpeedChars = 8;  // "Standard" is the longest label
-  speedValueY = speedArrowY + (settingsArrowHeight - 16) / 2;
-  speedValueWidth = maxSpeedChars * charWidth;
-  speedValueX = settingsMenuX + (settingsMenuWidth - speedValueWidth) / 2 + 2;
-
-  // Draw initial speed value
-  updateDriveSpeedDisplay();
+  speedValue.setPosition(
+      settingsMenuX + (settingsMenuWidth - maxSpeedChars * 12) / 2 + 2,
+      speedArrowY + (settingsArrowHeight - 16) / 2,
+      maxSpeedChars * 12
+  );
+  speedValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
+  speedValue.setTextSize(2);
+  speedValue.setValue(DRIVE_SPEED_LABELS[driveSpeed]);
+  speedValue.draw(tft);
 
   // Draw grid size setting label
   String distanceLabel = "Drive Distance";
@@ -651,86 +646,32 @@ void drawSettingsMenu() {
   distanceRightArrow.setBgColor(settingsMenuTextColor);
   distanceRightArrow.draw(tft);
 
-  // Calculate and store size value position
+  // Set up distance value display
   int maxSizeChars = 8;  // "Standard" is the longest label
-  distanceValueY = distanceArrowY + (settingsArrowHeight - 16) / 2;
-  distanceValueWidth = maxSizeChars * charWidth;
-  distanceValueX = settingsMenuX + (settingsMenuWidth - distanceValueWidth) / 2 + 2;
-
-  // Draw initial size value
-  updateDriveDistanceDisplay();
+  distanceValue.setPosition(
+      settingsMenuX + (settingsMenuWidth - maxSizeChars * 12) / 2 + 2,
+      distanceArrowY + (settingsArrowHeight - 16) / 2,
+      maxSizeChars * 12
+  );
+  distanceValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
+  distanceValue.setTextSize(2);
+  distanceValue.setValue(DRIVE_DISTANCE_LABELS[driveDistance]);
+  distanceValue.draw(tft);
 }
 
 void updateBrightnessDisplay() {
-  // Clear the entire value area
-  tft.fillRect(
-    brightnessValueX,
-    brightnessValueY,
-    brightnessValueWidth,
-    16,
-    settingsMenuBackgroundColor);
-
-  // Set text size
-  tft.setTextSize(2);
-  int charWidth = 12;
-
-  // Calculate width of current value text
-  String brightnessText = String(displayBrightness) + "%";
-  int actualTextWidth = brightnessText.length() * charWidth;
-
-  // Calculate centered position for current text
-  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
-  tft.setTextColor(settingsMenuTextColor);
-  tft.setCursor(textX, brightnessValueY);
-  tft.print(brightnessText);
+  brightnessValue.setValue(String(displayBrightness) + "%");
+  brightnessValue.draw(tft);
 }
 
 void updateDriveSpeedDisplay() {
-  // Clear the entire value area
-  tft.fillRect(
-    speedValueX,
-    speedValueY,
-    speedValueWidth,
-    16,
-    settingsMenuBackgroundColor);
-
-  // Set text size
-  tft.setTextSize(2);
-  int charWidth = 12;
-
-  // Get current speed label
-  String speedText = DRIVE_SPEED_LABELS[driveSpeed];
-  int actualTextWidth = speedText.length() * charWidth;
-
-  // Calculate centered position for current text
-  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
-  tft.setTextColor(settingsMenuTextColor);
-  tft.setCursor(textX, speedValueY);
-  tft.print(speedText);
+  speedValue.setValue(DRIVE_SPEED_LABELS[driveSpeed]);
+  speedValue.draw(tft);
 }
 
 void updateDriveDistanceDisplay() {
-  // Clear the entire value area
-  tft.fillRect(
-    distanceValueX,
-    distanceValueY,
-    distanceValueWidth,
-    16,
-    settingsMenuBackgroundColor);
-
-  // Set text size
-  tft.setTextSize(2);
-  int charWidth = 12;
-
-  // Get current size label
-  String distanceText = DRIVE_DISTANCE_LABELS[driveDistance];
-  int actualTextWidth = distanceText.length() * charWidth;
-
-  // Calculate centered position for current text
-  int textX = settingsMenuX + (settingsMenuWidth - actualTextWidth) / 2 + 2;
-  tft.setTextColor(settingsMenuTextColor);
-  tft.setCursor(textX, distanceValueY);
-  tft.print(distanceText);
+  distanceValue.setValue(DRIVE_DISTANCE_LABELS[driveDistance]);
+  distanceValue.draw(tft);
 }
 
 bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {

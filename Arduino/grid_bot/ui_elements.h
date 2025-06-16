@@ -86,4 +86,52 @@ public:
   void draw(Adafruit_ILI9341 &tft) const override;
 };
 
+class UIValueDisplay {
+public:
+    int x;
+    int y;
+    int width;
+    uint16_t backgroundColor;
+    uint16_t textColor;
+    uint8_t textSize;
+    String value;
+
+    UIValueDisplay() : x(0), y(0), width(0),
+                       backgroundColor(ILI9341_DARKGREY),
+                       textColor(ILI9341_WHITE),
+                       textSize(2),
+                       value("") {}
+
+    void setPosition(int bx, int by, int w) {
+        x = bx;
+        y = by;
+        width = w;
+    }
+
+    void setColors(uint16_t bg, uint16_t txt) {
+        backgroundColor = bg;
+        textColor = txt;
+    }
+
+    void setTextSize(uint8_t size) { textSize = size; }
+    void setValue(const String &val) { value = val; }
+
+    void draw(Adafruit_ILI9341 &tft) const {
+        // Clear the entire value area
+        tft.fillRect(x, y, width, 16, backgroundColor);
+
+        // Set text properties
+        tft.setTextSize(textSize);
+        tft.setTextColor(textColor);
+        
+        // Calculate centered position for text
+        int charWidth = 6 * textSize;
+        int actualTextWidth = value.length() * charWidth;
+        int textX = x + (width - actualTextWidth) / 2 + 2;
+        
+        tft.setCursor(textX, y);
+        tft.print(value);
+    }
+};
+
 #endif
