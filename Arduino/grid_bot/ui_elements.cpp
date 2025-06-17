@@ -40,12 +40,12 @@ void UIArrow::draw(Adafruit_ILI9341 &tft) const {
         x + width - triangleWidth, centerY,  // Right point
         x + width, y + (height - triangleHeight) / 2,  // Top point
         x + width, y + (height + triangleHeight) / 2,  // Bottom point
-        bgColor);  // Use the button's background color for the arrow
+        triangleColor);  // Use the triangle color for the arrow
   } else {
     tft.fillTriangle(
         x + triangleWidth, centerY,  // Left point
         x, y + (height - triangleHeight) / 2,  // Top point
         x, y + (height + triangleHeight) / 2,  // Bottom point
-        bgColor);  // Use the button's background color for the arrow
+        triangleColor);  // Use the triangle color for the arrow
   }
 }

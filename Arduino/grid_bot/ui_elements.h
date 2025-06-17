@@ -73,14 +73,16 @@ public:
   ArrowDirection dir;
   int triangleWidth;   // New attribute for explicit triangle width
   int triangleHeight;  // New attribute for explicit triangle height
+  uint16_t triangleColor;  // New attribute for triangle color
 
-  UIArrow() : dir(ARROW_LEFT), triangleWidth(12), triangleHeight(18) {}  // Default values based on previous 60% of 20x30
+  UIArrow() : dir(ARROW_LEFT), triangleWidth(12), triangleHeight(18), triangleColor(ILI9341_DARKGREY) {}  // Default values based on previous 60% of 20x30
 
   void setDirection(ArrowDirection d) { dir = d; }
   void setTriangleSize(int width, int height) {  // New setter method
     triangleWidth = width;
     triangleHeight = height;
   }
+  void setTriangleColor(uint16_t color) { triangleColor = color; }  // New setter method
 
   // Override the draw method to draw the arrow
   void draw(Adafruit_ILI9341 &tft) const override;

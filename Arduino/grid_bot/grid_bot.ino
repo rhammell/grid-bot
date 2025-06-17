@@ -567,13 +567,15 @@ void drawSettingsMenu() {
   brightnessLeftArrow.setBounds(brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
   brightnessLeftArrow.setDirection(ARROW_LEFT);
   brightnessLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessLeftArrow.setBgColor(settingsMenuTextColor);
+  brightnessLeftArrow.setBgColor(selectableColor);
+  brightnessLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
   brightnessLeftArrow.draw(tft);
 
   brightnessRightArrow.setBounds(brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
   brightnessRightArrow.setDirection(ARROW_RIGHT);
   brightnessRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessRightArrow.setBgColor(settingsMenuTextColor);
+  brightnessRightArrow.setBgColor(selectableColor);
+  brightnessRightArrow.setTriangleColor(settingsMenuBackgroundColor);
   brightnessRightArrow.draw(tft);
 
   // Set up brightness value display
@@ -602,13 +604,15 @@ void drawSettingsMenu() {
   speedLeftArrow.setBounds(speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
   speedLeftArrow.setDirection(ARROW_LEFT);
   speedLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedLeftArrow.setBgColor(settingsMenuTextColor);
+  speedLeftArrow.setBgColor(selectableColor);
+  speedLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
   speedLeftArrow.draw(tft);
 
   speedRightArrow.setBounds(speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
   speedRightArrow.setDirection(ARROW_RIGHT);
   speedRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedRightArrow.setBgColor(settingsMenuTextColor);
+  speedRightArrow.setBgColor(selectableColor);
+  speedRightArrow.setTriangleColor(settingsMenuBackgroundColor);
   speedRightArrow.draw(tft);
 
   // Calculate and store speed value position
@@ -637,13 +641,15 @@ void drawSettingsMenu() {
   distanceLeftArrow.setBounds(distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
   distanceLeftArrow.setDirection(ARROW_LEFT);
   distanceLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceLeftArrow.setBgColor(settingsMenuTextColor);
+  distanceLeftArrow.setBgColor(selectableColor);
+  distanceLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
   distanceLeftArrow.draw(tft);
 
   distanceRightArrow.setBounds(distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
   distanceRightArrow.setDirection(ARROW_RIGHT);
   distanceRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceRightArrow.setBgColor(settingsMenuTextColor);
+  distanceRightArrow.setBgColor(selectableColor);
+  distanceRightArrow.setTriangleColor(settingsMenuBackgroundColor);
   distanceRightArrow.draw(tft);
 
   // Set up distance value display
