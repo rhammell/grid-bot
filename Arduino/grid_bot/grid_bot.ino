@@ -68,11 +68,11 @@ UIArrow distanceRightArrow;
 UIArrow speedLeftArrow;
 UIArrow speedRightArrow;
 
-// Settings menu position params
-int settingsMenuWidth;
-int settingsMenuHeight;
-int settingsMenuX;
-int settingsMenuY;
+// Settings menu
+UISettingsMenu settingsMenu;
+
+// Settings option labels
+const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
 
 // Font metrics
 const int FONT_CHAR_WIDTH = 6;
@@ -190,6 +190,9 @@ void setup() {
   // Layout and draw UI
   layoutUI();
   drawUI();
+
+  // Initialize settings menu
+  settingsMenu.setupOptions(SETTINGS_LABELS, 3);
 }
 
 void setBrightness() {
@@ -227,6 +230,20 @@ void layoutUI() {
   settingsButton.setBounds(settingsX, y, settingsButtonWidth, buttonHeight);
   settingsButton.setIcon(SETTINGS_ICON, 24, 24);
   settingsButton.setBgColor(ILI9341_DARKGREY);
+
+  // Layout settings menu
+  int menuWidth = gridModel.getGridWidth() * 0.85;
+  int menuHeight = 225;
+  int menuX = gridModel.getOffsetX() + (gridModel.getGridWidth() - menuWidth) / 2;
+  int menuY = gridModel.getOffsetY() + (gridModel.getGridHeight() - menuHeight) / 2;
+
+  settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
+  settingsMenu.setColors(settingsMenuBackgroundColor, ILI9341_WHITE, settingsMenuTextColor);
+  settingsMenu.setTextSize(settingsTextSize);
+  settingsMenu.setArrowSize(settingsArrowWidth, settingsArrowHeight);
+  settingsMenu.setArrowMargin(settingsArrowMarginX);
+  settingsMenu.setOptionSpacing(70);
+  settingsMenu.layout();
 }
 
 void drawUI() {
@@ -443,153 +460,28 @@ void drawSettingsButton() {
 }
 
 void drawSettingsMenu() {
-  // Calculate menu dimensions and position
-  settingsMenuWidth = gridModel.getGridWidth() * 0.85;
-  settingsMenuHeight = 225;
-  settingsMenuX = gridModel.getOffsetX() + (gridModel.getGridWidth() - settingsMenuWidth) / 2;
-  settingsMenuY = gridModel.getOffsetY() + (gridModel.getGridHeight() - settingsMenuHeight) / 2;
+  // Update option values with current settings
+  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
+  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
+  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
 
-  // Calculate character width based on text size
-  int settingsCharWidth = FONT_CHAR_WIDTH * settingsTextSize;
-  int centeringOffset = settingsTextSize;
-  int fontPadding = settingsTextSize;
-  
-  // Draw menu background
-  tft.fillRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, settingsMenuBackgroundColor);
-  tft.drawRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, ILI9341_WHITE);
-
-  // Set text size and color
-  tft.setTextSize(settingsTextSize);
-  tft.setTextColor(settingsMenuTextColor);
-
-  // Draw brightness setting label
-  String brightnessLabel = "Brightness";
-  int brightnessLabelX = settingsMenuX + (settingsMenuWidth - (brightnessLabel.length() * settingsCharWidth - fontPadding)) / 2;
-  int brightnessLabelY = settingsMenuY + 20;
-  tft.setCursor(brightnessLabelX, brightnessLabelY);
-  tft.print(brightnessLabel);
-
-  // Calculate brightness arrow positions
-  int brightnessArrowX1 = settingsMenuX + settingsArrowMarginX;
-  int brightnessArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  int brightnessArrowY = brightnessLabelY + 20;
-  brightnessLeftArrow.setBounds(brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
-  brightnessLeftArrow.setDirection(ARROW_LEFT);
-  brightnessLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessLeftArrow.setBgColor(settingsMenuBackgroundColor);
-  brightnessLeftArrow.setTriangleColor(ILI9341_WHITE);
-  brightnessLeftArrow.draw(tft);
-  brightnessRightArrow.setBounds(brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
-  brightnessRightArrow.setDirection(ARROW_RIGHT);
-  brightnessRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessRightArrow.setBgColor(settingsMenuBackgroundColor);
-  brightnessRightArrow.setTriangleColor(ILI9341_WHITE);
-  brightnessRightArrow.draw(tft);
-
-  // Set up brightness value display
-  int maxBrightnessChars = 4;
-  int maxBrightnessWidth = maxBrightnessChars * settingsCharWidth - fontPadding;
-  brightnessValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxBrightnessWidth) / 2,
-      brightnessArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
-      maxBrightnessWidth
-  );
-  brightnessValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  brightnessValue.setTextSize(settingsTextSize);
-  brightnessValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
-  brightnessValue.setValue(String(displayBrightness) + "%");
-  brightnessValue.draw(tft);
-
-  // Draw speed setting label
-  String speedLabel = "Drive Speed";
-  int speedLabelX = settingsMenuX + (settingsMenuWidth - (speedLabel.length() * settingsCharWidth - fontPadding)) / 2;
-  int speedLabelY = brightnessLabelY + 70;
-  tft.setCursor(speedLabelX, speedLabelY);
-  tft.print(speedLabel);
-
-  // Calculate size arrow positions
-  int speedArrowX1 = settingsMenuX + settingsArrowMarginX;
-  int speedArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  int speedArrowY = speedLabelY + 20;
-  speedLeftArrow.setBounds(speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
-  speedLeftArrow.setDirection(ARROW_LEFT);
-  speedLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedLeftArrow.setBgColor(settingsMenuBackgroundColor);
-  speedLeftArrow.setTriangleColor(ILI9341_WHITE);
-  speedLeftArrow.draw(tft);
-  speedRightArrow.setBounds(speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
-  speedRightArrow.setDirection(ARROW_RIGHT);
-  speedRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedRightArrow.setBgColor(settingsMenuBackgroundColor);
-  speedRightArrow.setTriangleColor(ILI9341_WHITE);
-  speedRightArrow.draw(tft);
-
-  // Calculate and store speed value position
-  int maxSpeedChars = 8;  // "Standard" is the longest label
-  int maxSpeedWidth = maxSpeedChars * settingsCharWidth - fontPadding;
-  speedValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxSpeedWidth) / 2,
-      speedArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
-      maxSpeedWidth
-  );
-  speedValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  speedValue.setTextSize(settingsTextSize);
-  speedValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
-  speedValue.setValue(DRIVE_SPEED_LABELS[driveSpeed]);
-  speedValue.draw(tft);
-
-  // Draw grid size setting label
-  String distanceLabel = "Drive Distance";
-  int distanceLabelX = settingsMenuX + (settingsMenuWidth - (distanceLabel.length() * settingsCharWidth - fontPadding)) / 2;
-  int distanceLabelY = speedLabelY + 70;
-  tft.setCursor(distanceLabelX, distanceLabelY);
-  tft.print(distanceLabel);
-
-  // Calculate size arrow positions
-  int distanceArrowX1 = settingsMenuX + settingsArrowMarginX;
-  int distanceArrowX2 = settingsMenuX + settingsMenuWidth - settingsArrowMarginX - settingsArrowWidth;
-  int distanceArrowY = distanceLabelY + 20;
-  distanceLeftArrow.setBounds(distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
-  distanceLeftArrow.setDirection(ARROW_LEFT);
-  distanceLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceLeftArrow.setBgColor(settingsMenuBackgroundColor);
-  distanceLeftArrow.setTriangleColor(ILI9341_WHITE);
-  distanceLeftArrow.draw(tft);
-  distanceRightArrow.setBounds(distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
-  distanceRightArrow.setDirection(ARROW_RIGHT);
-  distanceRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceRightArrow.setBgColor(settingsMenuBackgroundColor);
-  distanceRightArrow.setTriangleColor(ILI9341_WHITE);
-  distanceRightArrow.draw(tft);
-
-  // Set up distance value display
-  int maxSizeChars = 8;  // "Standard" is the longest label
-  int maxSizeWidth = maxSizeChars * settingsCharWidth - fontPadding;
-  distanceValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxSizeWidth) / 2,
-      distanceArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
-      maxSizeWidth
-  );
-  distanceValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  distanceValue.setTextSize(settingsTextSize);
-  distanceValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
-  distanceValue.setValue(DRIVE_DISTANCE_LABELS[driveDistance]);
-  distanceValue.draw(tft);
+  // Draw the menu
+  settingsMenu.draw(tft);
 }
 
 void updateBrightnessDisplay() {
-  brightnessValue.setValue(String(displayBrightness) + "%");
-  brightnessValue.draw(tft);
+  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
+  settingsMenu.draw(tft);
 }
 
 void updateDriveSpeedDisplay() {
-  speedValue.setValue(DRIVE_SPEED_LABELS[driveSpeed]);
-  speedValue.draw(tft);
+  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
+  settingsMenu.draw(tft);
 }
 
 void updateDriveDistanceDisplay() {
-  distanceValue.setValue(DRIVE_DISTANCE_LABELS[driveDistance]);
-  distanceValue.draw(tft);
+  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
+  settingsMenu.draw(tft);
 }
 
 bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {
@@ -880,63 +772,19 @@ void loop() {
 
     // Check if in settings state
     else if (uiState == SETTINGS) {
-
-      // Check if touch is in brightness right arrow
-      if (brightnessRightArrow.contains(pixelX, pixelY)) {
-        // Increase brightness and redraw value
-        displayBrightness = min(100, displayBrightness + 10);
-        setBrightness();
-        updateBrightnessDisplay();
-        delay(250);
-      }
-
-      // Check if touch is in brightness left arrow
-      else if (brightnessLeftArrow.contains(pixelX, pixelY)) {
-        // Decrease brightness and redraw value
-        displayBrightness = max(10, displayBrightness - 10);
-        setBrightness();
-        updateBrightnessDisplay();
-        delay(250);
-      }
-
-      // Check if touch is in size right arrow
-      else if (distanceRightArrow.contains(pixelX, pixelY)) {
-        // Increase drive distance and redraw value
-        if (driveDistance < DISTANCE_EXTENDED) {
-          driveDistance = (DriveDistance)(driveDistance + 1);
-          updateDriveDistanceDisplay();
+      // Get which option was touched
+      int touchedOption = settingsMenu.getTouchedOption(pixelX, pixelY);
+      
+      if (touchedOption >= 0) {
+        // Check for arrow touches on the specific option
+        if (settingsMenu.isLeftArrowTouched(pixelX, pixelY, touchedOption)) {
+          handleSettingsLeftArrow(touchedOption);
+          delay(250);
         }
-        delay(250);
-      }
-
-      // Check if touch is in size left arrow
-      else if (distanceLeftArrow.contains(pixelX, pixelY)) {
-        // Decrease drive distance and redraw value
-        if (driveDistance > DISTANCE_COMPACT) {
-          driveDistance = (DriveDistance)(driveDistance - 1);
-          updateDriveDistanceDisplay();
+        else if (settingsMenu.isRightArrowTouched(pixelX, pixelY, touchedOption)) {
+          handleSettingsRightArrow(touchedOption);
+          delay(250);
         }
-        delay(250);
-      }
-
-      // Check if touch is in speed right arrow
-      else if (speedRightArrow.contains(pixelX, pixelY)) {
-        // Increase drive speed and redraw value
-        if (driveSpeed < SPEED_FAST) {
-          driveSpeed = (DriveSpeed)(driveSpeed + 1);
-          updateDriveSpeedDisplay();
-        }
-        delay(250);
-      }
-
-      // Check if touch is in speed left arrow
-      else if (speedLeftArrow.contains(pixelX, pixelY)) {
-        // Decrease drive speed and redraw value
-        if (driveSpeed > SPEED_SLOW) {
-          driveSpeed = (DriveSpeed)(driveSpeed - 1);
-          updateDriveSpeedDisplay();
-        }
-        delay(250);
       }
     }
 
@@ -972,4 +820,49 @@ void loop() {
   }
 
   delay(50);
+}
+
+// New helper functions for settings handling
+void handleSettingsLeftArrow(int optionIndex) {
+  switch (optionIndex) {
+    case 0: // Brightness
+      displayBrightness = max(10, displayBrightness - 10);
+      setBrightness();
+      updateBrightnessDisplay();
+      break;
+    case 1: // Drive Speed
+      if (driveSpeed > SPEED_SLOW) {
+        driveSpeed = (DriveSpeed)(driveSpeed - 1);
+        updateDriveSpeedDisplay();
+      }
+      break;
+    case 2: // Drive Distance
+      if (driveDistance > DISTANCE_COMPACT) {
+        driveDistance = (DriveDistance)(driveDistance - 1);
+        updateDriveDistanceDisplay();
+      }
+      break;
+  }
+}
+
+void handleSettingsRightArrow(int optionIndex) {
+  switch (optionIndex) {
+    case 0: // Brightness
+      displayBrightness = min(100, displayBrightness + 10);
+      setBrightness();
+      updateBrightnessDisplay();
+      break;
+    case 1: // Drive Speed
+      if (driveSpeed < SPEED_FAST) {
+        driveSpeed = (DriveSpeed)(driveSpeed + 1);
+        updateDriveSpeedDisplay();
+      }
+      break;
+    case 2: // Drive Distance
+      if (driveDistance < DISTANCE_EXTENDED) {
+        driveDistance = (DriveDistance)(driveDistance + 1);
+        updateDriveDistanceDisplay();
+      }
+      break;
+  }
 }
