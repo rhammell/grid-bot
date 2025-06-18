@@ -4,6 +4,7 @@
 #include "TouchScreen.h"
 #include "icons.h"
 #include "ui_elements.h"
+#include "grid_model.h"
 
 // TFT Pins
 #define TFT_CS 17
@@ -36,37 +37,8 @@ int displayBrightness = 60;
 int screenWidth;
 int screenHeight;
 
-// Grid cell size
-int cellSize = 30;
-
-// Grid dimensions and offsets
-int numRows;
-int numCols;
-int gridWidth;
-int gridHeight;
-int offsetX;
-int offsetY;
-
-// Grid display colors
-uint16_t backgroundColor = ILI9341_BLACK;
-uint16_t selectedColor = ILI9341_BLACK;
-uint16_t emptyColor = ILI9341_WHITE;
-uint16_t gridColor = ILI9341_DARKGREY;
-uint16_t selectableColor = tft.color565(75, 225, 75);
-uint16_t arrowColor = ILI9341_WHITE;
-
-// Grid values array
-bool** gridVals;
-
-// Path cell structure
-struct PathCell {
-  int row;
-  int col;
-};
-
-// Initi path cell array and length
-PathCell* path;
-int pathLength = 0;
+// Grid model instance
+GridModel gridModel;
 
 // Button dimension values
 int buttonHeight = 36;
@@ -182,8 +154,6 @@ const unsigned long FORWARD_MOVE_TIME = 750;  // Time to move forward one cell
 const unsigned long TURN_MOVE_TIME = 500;     // Time to execute a 90-degree turn
 
 // Current movement tracking
-int currentPathIndex = 0;     // Current position in path array
-int currentDirection = 0;      // 0=up, 1=right, 2=down, 3=left
 unsigned long moveStartTime;  // Start time of current movement
 bool isTurning = false;        // Whether bot is currently executing a turn
 
@@ -208,17 +178,14 @@ void setup() {
   tft.setRotation(0);
 
   // Fill screen with black background
-  tft.fillScreen(backgroundColor);
+  tft.fillScreen(ILI9341_BLACK);
 
   // Dynamically get screen dimensions
   screenWidth = tft.width();
   screenHeight = tft.height();
 
-  // Initialize grid values
-  initGrid();
-
-  // Initialize path array with default points
-  initPath();
+  // Initialize grid model
+  gridModel.initGrid(screenWidth, screenHeight, buttonHeight, buttonMargin);
 
   // Layout and draw UI
   layoutUI();
@@ -236,97 +203,17 @@ void setBrightness() {
   analogWrite(TFT_LED, pwmOutput);
 }
 
-void initGrid() {
-
-  // Calculate grid size based on available screen space
-  int availableHeight = screenHeight - buttonHeight - 1 - buttonMargin;
-  numRows = (availableHeight - 1) / cellSize;
-  numCols = ((screenWidth - 1) / cellSize) -
-            (((screenWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
-
-  // Calculate grid dimensions and offsets
-  gridWidth = cellSize * numCols;
-  gridHeight = cellSize * numRows;
-  offsetX = (screenWidth - gridWidth - 1) / 2;
-  offsetY =
-    (screenHeight - gridHeight - 1 - buttonHeight - buttonMargin) / 2;
-
-  // Initialize 2D grid of cell values
-  gridVals = new bool*[numRows];
-  for (int i = 0; i < numRows; i++) {
-    gridVals[i] = new bool[numCols];
-  }
-
-  // Reset all grid values to 0
-  resetGridValues();
-}
-
-void resetGridValues() {
-  for (int i = 0; i < numRows; i++) {
-    for (int j = 0; j < numCols; j++) {
-      gridVals[i][j] = false;
-    }
-  }
-}
-
-void initPath() {
-  // Initialize array of path points
-  path = new PathCell[numRows * numCols];
-
-  // Set two initial default path points
-  resetDefaultPath();
-}
-
-void resetDefaultPath() {
-  // Set path length to zero
-  pathLength = 0;
-
-  // Add to points at center bottom of grid
-  int startRow = numRows - 1;
-  int startCol = numCols / 2;
-  pathAdd(startRow, startCol);
-  pathAdd(startRow - 1, startCol);
-}
-
-void pathAdd(int row, int col) {
-  // Add coordinate to the list of path points
-  path[pathLength] = { row, col };
-  pathLength += 1;
-
-  // Update the grid value of point
-  gridVals[row][col] = true;
-}
-
-bool isSelectable(int row, int col) {
-  // If cell is already selected, it's not selectable
-  if (gridVals[row][col]) {
-    return false;
-  }
-
-  // Get the last point in the path
-PathCell lastPoint = path[pathLength - 1];
-
-  // Check if cell is adjacent (not diagonal) to last point
-  bool isAdjacent = (
-    // Check horizontal adjacency
-    (row == lastPoint.row && abs(col - lastPoint.col) == 1) ||
-    // Check vertical adjacency
-    (col == lastPoint.col && abs(row - lastPoint.row) == 1));
-
-  return isAdjacent;
-}
-
 void layoutUI() {
   // Calculate button row relative to grid
-  int y = offsetY + gridHeight + buttonMargin + 1;
+  int y = gridModel.getOffsetY() + gridModel.getGridHeight() + buttonMargin + 1;
 
   // Undo button position
-  undoButton.setBounds(offsetX, y, undoButtonWidth, buttonHeight);
+  undoButton.setBounds(gridModel.getOffsetX(), y, undoButtonWidth, buttonHeight);
   undoButton.setIcon(UNDO_ICON, 24, 24);
   undoButton.setBgColor(ILI9341_DARKGREY);
 
   // Start button position and width
-  int startButtonWidth = gridWidth - undoButtonWidth - buttonMargin -
+  int startButtonWidth = gridModel.getGridWidth() - undoButtonWidth - buttonMargin -
                      settingsButtonWidth - buttonMargin + 1;
   int startX = undoButton.x + undoButton.width + buttonMargin;
   startButton.setBounds(startX, y, startButtonWidth, buttonHeight);
@@ -345,7 +232,7 @@ void layoutUI() {
 void drawUI() {
   // Draw all UI elements
   drawGridLines();
-  drawGridCells(0, numRows - 1, 0, numCols - 1);
+  drawGridCells();
   drawUndoButton();
   drawStartButton();
   drawSettingsButton();
@@ -353,94 +240,105 @@ void drawUI() {
 
 void drawGridLines() {
   // Draw horizontal grid lines
-  for (int i = 0; i < numRows + 1; i++) {
+  for (int i = 0; i < gridModel.getNumRows() + 1; i++) {
     tft.drawLine(
-      offsetX,
-      i * cellSize + offsetY,
-      offsetX + gridWidth,
-      i * cellSize + offsetY,
-      gridColor);
+      gridModel.getOffsetX(),
+      i * gridModel.getCellSize() + gridModel.getOffsetY(),
+      gridModel.getOffsetX() + gridModel.getGridWidth(),
+      i * gridModel.getCellSize() + gridModel.getOffsetY(),
+      gridModel.getGridColor());
   }
 
   // Draw verticalgrid lines
-  for (int i = 0; i < numCols + 1; i++) {
+  for (int i = 0; i < gridModel.getNumCols() + 1; i++) {
     tft.drawLine(
-      i * cellSize + offsetX,
-      offsetY,
-      i * cellSize + offsetX,
-      offsetY + gridHeight,
-      gridColor);
+      i * gridModel.getCellSize() + gridModel.getOffsetX(),
+      gridModel.getOffsetY(),
+      i * gridModel.getCellSize() + gridModel.getOffsetX(),
+      gridModel.getOffsetY() + gridModel.getGridHeight(),
+      gridModel.getGridColor());
   }
 }
 
+void drawGridCells() {
+  // Default to drawing entire grid
+  drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
+}
 
 void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
   // Clamp values to grid bounds
-  startRow = max(0, min(startRow, numRows - 1));
-  endRow = max(0, min(endRow, numRows - 1));
-  startCol = max(0, min(startCol, numCols - 1));
-  endCol = max(0, min(endCol, numCols - 1));
+  startRow = max(0, min(startRow, gridModel.getNumRows() - 1));
+  endRow = max(0, min(endRow, gridModel.getNumRows() - 1));
+  startCol = max(0, min(startCol, gridModel.getNumCols() - 1));
+  endCol = max(0, min(endCol, gridModel.getNumCols() - 1));
 
   // Loop through row and col values
   for (int i = startRow; i <= endRow; i++) {
     for (int j = startCol; j <= endCol; j++) {
-      Serial.println("looping");
 
       // Determine cell color
       int color;
 
       // Check if cell is activated
-      if (gridVals[i][j]) {
+      if (gridModel.isCellActivated(i, j)) {
 
         if (uiState == RUNNING || uiState == COMPLETE) {
-          for (int p = 0; p <= currentPathIndex; p++) {
-            if (i == path[p].row && j == path[p].col) {
-              color = selectableColor;
+          // Check if this cell is within the processed path range
+          bool isProcessed = false;
+          for (int p = 0; p <= gridModel.getCurrentPathIndex(); p++) {
+            if (i == gridModel.getPath()[p].row && j == gridModel.getPath()[p].col) {
+              isProcessed = true;
               break;
             }
           }
+          
+          if (isProcessed) {
+            color = gridModel.getSelectableColor(); // Green for processed cells
+          } else {
+            color = gridModel.getSelectedColor(); // Black for unprocessed cells
+          }
         } else {
-          color = selectedColor;
+          color = gridModel.getSelectedColor(); // Black for idle state
         }
       }
-      // UI is
-      else if (uiState == IDLE && isSelectable(i, j)) {
-        color = selectableColor;  // Green for selectable cells
+      // UI is in idle state and cell is selectable
+      else if (uiState == IDLE && gridModel.isSelectable(i, j)) {
+        color = gridModel.getSelectableColor();  // Green for selectable cells
       }
-      //
+      // Default empty cell color
       else {
-        color = emptyColor;
+        color = gridModel.getEmptyColor();
       }
 
       // Draw cell rect
       tft.fillRect(
-        j * cellSize + offsetX + 1,
-        i * cellSize + offsetY + 1,
-        cellSize - 1,
-        cellSize - 1,
+        j * gridModel.getCellSize() + gridModel.getOffsetX() + 1,
+        i * gridModel.getCellSize() + gridModel.getOffsetY() + 1,
+        gridModel.getCellSize() - 1,
+        gridModel.getCellSize() - 1,
         color);
 
       // Loop through path point indexes
-      for (int p = 0; p < pathLength; p++) {
+      for (int p = 0; p < gridModel.getPathLength(); p++) {
 
         // Check if current cell is equal to path point
-        if (i == path[p].row && j == path[p].col) {
+        if (i == gridModel.getPath()[p].row && j == gridModel.getPath()[p].col) {
 
           // Current and next path point
-          PathCell currentPoint = path[p];
+          PathCell currentPoint = gridModel.getPath()[p];
           PathCell nextPoint;
 
           // If only one path point, define next point to draw up arrow
-          if (pathLength == 1) {
+          if (gridModel.getPathLength() == 1) {
             nextPoint = { currentPoint.row - 1, currentPoint.col };
           }
           // If last path point, use current point to draw circle
-          else if (p == pathLength - 1) {
+          else if (p == gridModel.getPathLength() - 1) {
             nextPoint = currentPoint;
           }
           // If any other path point, use next point in path
           else {
-            nextPoint = path[p + 1];
+            nextPoint = gridModel.getPath()[p + 1];
           }
 
           // Draw cell arrow using current and next
@@ -453,13 +351,13 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
 
 void drawCellDirection(int row, int col, int nextRow, int nextCol) {
   // Calculate cell center
-  int centerX = col * cellSize + offsetX + (cellSize / 2);
-  int centerY = row * cellSize + offsetY + (cellSize / 2);
+  int centerX = col * gridModel.getCellSize() + gridModel.getOffsetX() + (gridModel.getCellSize() / 2);
+  int centerY = row * gridModel.getCellSize() + gridModel.getOffsetY() + (gridModel.getCellSize() / 2);
 
   // If last cell in path draw circle
-  if (row == path[pathLength - 1].row && col == path[pathLength - 1].col) {
+  if (row == gridModel.getPath()[gridModel.getPathLength() - 1].row && col == gridModel.getPath()[gridModel.getPathLength() - 1].col) {
     int circleRadius = 3;
-    tft.fillCircle(centerX, centerY, circleRadius, arrowColor);
+    tft.fillCircle(centerX, centerY, circleRadius, gridModel.getArrowColor());
     return;
   }
 
@@ -473,25 +371,25 @@ void drawCellDirection(int row, int col, int nextRow, int nextCol) {
       centerX - 3, centerY - 3,
       centerX - 3, centerY + 3,
       centerX + 3, centerY,
-      arrowColor);
+      gridModel.getArrowColor());
   } else if (dx < 0) {  // Moving left
     tft.fillTriangle(
       centerX + 3, centerY - 3,
       centerX + 3, centerY + 3,
       centerX - 3, centerY,
-      arrowColor);
+      gridModel.getArrowColor());
   } else if (dy > 0) {  // Moving down
     tft.fillTriangle(
       centerX - 3, centerY - 3,
       centerX + 3, centerY - 3,
       centerX, centerY + 3,
-      arrowColor);
+      gridModel.getArrowColor());
   } else if (dy < 0) {  // Moving up
     tft.fillTriangle(
       centerX - 3, centerY + 3,
       centerX + 3, centerY + 3,
       centerX, centerY - 3,
-      arrowColor);
+      gridModel.getArrowColor());
   }
 }
 
@@ -546,10 +444,10 @@ void drawSettingsButton() {
 
 void drawSettingsMenu() {
   // Calculate menu dimensions and position
-  settingsMenuWidth = gridWidth * 0.85;
+  settingsMenuWidth = gridModel.getGridWidth() * 0.85;
   settingsMenuHeight = 225;
-  settingsMenuX = offsetX + (gridWidth - settingsMenuWidth) / 2;
-  settingsMenuY = offsetY + (gridHeight - settingsMenuHeight) / 2;
+  settingsMenuX = gridModel.getOffsetX() + (gridModel.getGridWidth() - settingsMenuWidth) / 2;
+  settingsMenuY = gridModel.getOffsetY() + (gridModel.getGridHeight() - settingsMenuHeight) / 2;
 
   // Calculate character width based on text size
   int settingsCharWidth = FONT_CHAR_WIDTH * settingsTextSize;
@@ -700,7 +598,7 @@ bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHe
 
 bool isTouchInGrid(int x, int y) {
   // Subtract one to maintain previous < comparisons
-  return isPointInRect(x, y, offsetX, offsetY, gridWidth - 1, gridHeight - 1);
+  return isPointInRect(x, y, gridModel.getOffsetX(), gridModel.getOffsetY(), gridModel.getGridWidth() - 1, gridModel.getGridHeight() - 1);
 }
 
 // Function to calculate direction between two points
@@ -709,7 +607,7 @@ int getDirection(int startRow, int startCol, int endRow, int endCol) {
   if (endCol > startCol) return 1;  // Right
   if (endRow > startRow) return 2;  // Down
   if (endCol < startCol) return 3;  // Left
-  return currentDirection;           // No change
+  return gridModel.getCurrentDirection();           // No change
 }
 
 // Function to calculate required turn
@@ -731,8 +629,8 @@ void printCurrentCell(PathCell current, PathCell next) {
 void executeMovement() {
 
   // Get current and next points
-  PathCell current = path[currentPathIndex];
-  PathCell next = path[currentPathIndex + 1];
+  PathCell current = gridModel.getPath()[gridModel.getCurrentPathIndex()];
+  PathCell next = gridModel.getPath()[gridModel.getCurrentPathIndex() + 1];
 
   // Calculate target direction
   int targetDirection = getDirection(current.row, current.col, next.row, next.col);
@@ -742,7 +640,6 @@ void executeMovement() {
     // Stopped driving state
     case STOPPED:
       {
-
         // Print current cell being processed
         printCurrentCell(current, next);
 
@@ -750,7 +647,7 @@ void executeMovement() {
         drawGridCells(current.row, current.row, current.col, current.col);
 
         // Check if aligned to target direction
-        if (currentDirection == targetDirection) {
+        if (gridModel.getCurrentDirection() == targetDirection) {
 
           // Set driving flags
           driveState = DRIVING;
@@ -769,7 +666,7 @@ void executeMovement() {
           moveStartTime = millis();
 
           // Get turn direction
-          int turn = calculateTurn(currentDirection, targetDirection);
+          int turn = calculateTurn(gridModel.getCurrentDirection(), targetDirection);
 
           // Here you would add actual motor control:
           // if (turn < 0) turnLeft();
@@ -789,18 +686,18 @@ void executeMovement() {
         if (millis() - moveStartTime >= FORWARD_MOVE_TIME) {
 
           // Update current path point
-          currentPathIndex++;
+          gridModel.setCurrentPathIndex(gridModel.getCurrentPathIndex() + 1);
           moveStartTime = millis();  // Reset timer for next movement
 
           // Check if current path point is the last
-          if (currentPathIndex >= pathLength - 1) {
+          if (gridModel.getCurrentPathIndex() >= gridModel.getPathLength() - 1) {
 
             // Here you would stop motors:
             // stopMotors();
             Serial.println("Path complete");
 
             // Redraw current cell
-            drawGridCells(next.row, next.row, next.col, next.col);
+            drawGridCells(current.row, current.row, current.col, current.col);
 
             // Update UI and driving state
             uiState = COMPLETE;
@@ -812,8 +709,8 @@ void executeMovement() {
           else {
 
             // Calculate next direction
-            current = path[currentPathIndex];
-            next = path[currentPathIndex + 1];
+            current = gridModel.getPath()[gridModel.getCurrentPathIndex()];
+            next = gridModel.getPath()[gridModel.getCurrentPathIndex() + 1];
             int nextDirection = getDirection(current.row, current.col, next.row, next.col);
 
             // Print current cell being processed
@@ -823,7 +720,7 @@ void executeMovement() {
             drawGridCells(current.row, current.row, current.col, current.col);
 
             // If direction changes, stop for turn
-            if (nextDirection != currentDirection) {
+            if (nextDirection != gridModel.getCurrentDirection()) {
               driveState = STOPPED;
               // Here you would stop motors:
               // stopMotors();
@@ -847,7 +744,7 @@ void executeMovement() {
         if (millis() - moveStartTime >= TURN_MOVE_TIME) {
 
           // Update direction and start driving
-          currentDirection = targetDirection;
+          gridModel.setCurrentDirection(targetDirection);
           driveState = DRIVING;
           moveStartTime = millis();
 
@@ -915,7 +812,7 @@ void loop() {
       }
 
       // Redraw entire grid
-      drawGridCells(0, numRows - 1, 0, numCols - 1);
+      drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 
       // Draw button
       drawStartButton();
@@ -929,11 +826,11 @@ void loop() {
       Serial.println("Undo button touched");
 
       // Reset grid values and path to default cells
-      resetGridValues();
-      resetDefaultPath();
+      gridModel.resetGridValues();
+      gridModel.resetDefaultPath();
 
       // Redraw entire grid
-      drawGridCells(0, numRows - 1, 0, numCols - 1);
+      drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 
       // Debounce delay
       delay(50);
@@ -968,15 +865,15 @@ void loop() {
       Serial.println("Grid button touched");
 
       // Calculated col/row of touched cell
-      int gridCol = (pixelX - offsetX) / cellSize;
-      int gridRow = (pixelY - offsetY) / cellSize;
+      int gridCol = (pixelX - gridModel.getOffsetX()) / gridModel.getCellSize();
+      int gridRow = (pixelY - gridModel.getOffsetY()) / gridModel.getCellSize();
       Serial.println(gridCol);
       Serial.println(gridRow);
       Serial.println(" ");
 
       // If cell is selectable, add to path and redraw surrounding cells
-      if (isSelectable(gridRow, gridCol)) {
-        pathAdd(gridRow, gridCol);
+      if (gridModel.isSelectable(gridRow, gridCol)) {
+        gridModel.pathAdd(gridRow, gridCol);
         drawGridCells(gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
       }
     }
@@ -1052,8 +949,8 @@ void loop() {
     //
     if (millis() - countdownStart >= countdownDuration) {
       uiState = RUNNING;
-      currentPathIndex = 0;
-      currentDirection = 0;
+      gridModel.setCurrentPathIndex(0);
+      gridModel.setCurrentDirection(0);
       drawStartButton();
       //
     } else {
