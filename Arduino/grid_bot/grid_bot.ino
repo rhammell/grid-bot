@@ -471,17 +471,17 @@ void drawSettingsMenu() {
 
 void updateBrightnessDisplay() {
   settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
-  settingsMenu.draw(tft);
+  settingsMenu.redrawOption(0, tft);
 }
 
 void updateDriveSpeedDisplay() {
   settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
-  settingsMenu.draw(tft);
+  settingsMenu.redrawOption(1, tft);
 }
 
 void updateDriveDistanceDisplay() {
   settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
-  settingsMenu.draw(tft);
+  settingsMenu.redrawOption(2, tft);
 }
 
 bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {

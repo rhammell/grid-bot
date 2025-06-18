@@ -252,6 +252,9 @@ public:
     void setupOptions(const String* labels, int count);
     void updateOptionValue(int optionIndex, const String& value);
 
+    // Add this method to the UISettingsMenu class
+    void redrawOption(int optionIndex, Adafruit_ILI9341 &tft) const;
+
 private:
     static const int MAX_OPTIONS = 3;
     UISettingsOption options[MAX_OPTIONS];

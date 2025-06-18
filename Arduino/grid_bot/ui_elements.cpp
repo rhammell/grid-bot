@@ -204,3 +204,9 @@ void UISettingsMenu::updateOptionValue(int optionIndex, const String& value) {
         options[optionIndex].setValue(value);
     }
 }
+
+void UISettingsMenu::redrawOption(int optionIndex, Adafruit_ILI9341 &tft) const {
+    if (optionIndex >= 0 && optionIndex < numOptions) {
+        options[optionIndex].draw(tft);
+    }
+}
