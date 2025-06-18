@@ -46,8 +46,6 @@ int buttonMargin = 2;
 
 // Undo button position params
 int undoButtonWidth = 36;
-
-// Settings button position params
 int settingsButtonWidth = 36;
 
 // Button display colors
@@ -85,6 +83,11 @@ int settingsTextSize = 2;
 int settingsArrowWidth = 38;
 int settingsArrowHeight = 30;
 int settingsArrowMarginX = 2;
+
+// Color scheme for settings menu
+uint16_t settingsMenuBackgroundColor = ILI9341_DARKGREY;
+uint16_t settingsMenuTextColor = ILI9341_WHITE;
+uint16_t settingsMenuButtonColor = tft.color565(100, 100, 100);
 
 // Replace individual parameters with class instances
 UISettingsValue brightnessValue;
@@ -143,11 +146,6 @@ const char* DRIVE_DISTANCE_LABELS[] = { "Compact", "Standard", "Extended" };
 unsigned long countdownStart = 0;
 const int countdownDuration = 5000;
 int countdownNumber = -1;
-
-// Color scheme for settings menu
-uint16_t settingsMenuBackgroundColor = ILI9341_DARKGREY;
-uint16_t settingsMenuTextColor = ILI9341_WHITE;
-uint16_t settingsMenuButtonColor = tft.color565(100, 100, 100);
 
 // Movement timing constants
 const unsigned long FORWARD_MOVE_TIME = 750;  // Time to move forward one cell
@@ -237,7 +235,6 @@ void layoutUI() {
   int menuHeight = 225;
   int menuX = gridModel.getOffsetX() + (gridModel.getGridWidth() - menuWidth) / 2;
   int menuY = gridModel.getOffsetY() + (gridModel.getGridHeight() - menuHeight) / 2;
-
   settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
   settingsMenu.setColors(settingsMenuBackgroundColor, ILI9341_WHITE, settingsMenuTextColor);
   settingsMenu.setTextSize(settingsTextSize);

@@ -146,7 +146,7 @@ bool UISettingsOption::isRightArrowTouched(int px, int py) const {
 void UISettingsMenu::layout() {
     // Set up each option with proper positioning
     for (int i = 0; i < numOptions; i++) {
-        int optionY = y + 20 + (i * optionSpacing);
+        int optionY = y + (i * optionSpacing);
         options[i].setPosition(x, optionY, width, optionSpacing);
         options[i].setColors(backgroundColor, textColor);
         options[i].setTextSize(textSize);
