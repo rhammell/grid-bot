@@ -37,7 +37,7 @@ int screenWidth;
 int screenHeight;
 
 // Grid cell size
-int cellSize = 20;
+int cellSize = 30;
 
 // Grid dimensions and offsets
 int numRows;
@@ -102,10 +102,17 @@ int settingsMenuHeight;
 int settingsMenuX;
 int settingsMenuY;
 
+// Font metrics
+const int FONT_CHAR_WIDTH = 6;
+const int FONT_CHAR_HEIGHT = 8;
+
+// Settings menu text params
+int settingsTextSize = 2;
+
 // Settings menu arrow params
-int settingsArrowWidth = 20;
+int settingsArrowWidth = 38;
 int settingsArrowHeight = 30;
-int settingsArrowMarginX = 14;
+int settingsArrowMarginX = 2;
 
 // Replace individual parameters with class instances
 UISettingsValue brightnessValue;
@@ -544,18 +551,22 @@ void drawSettingsMenu() {
   settingsMenuX = offsetX + (gridWidth - settingsMenuWidth) / 2;
   settingsMenuY = offsetY + (gridHeight - settingsMenuHeight) / 2;
 
+  // Calculate character width based on text size
+  int settingsCharWidth = FONT_CHAR_WIDTH * settingsTextSize;
+  int centeringOffset = settingsTextSize;
+  int fontPadding = settingsTextSize;
+  
   // Draw menu background
   tft.fillRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, settingsMenuBackgroundColor);
   tft.drawRect(settingsMenuX, settingsMenuY, settingsMenuWidth, settingsMenuHeight, ILI9341_WHITE);
 
   // Set text size and color
-  tft.setTextSize(2);
+  tft.setTextSize(settingsTextSize);
   tft.setTextColor(settingsMenuTextColor);
-  int charWidth = 12;
 
   // Draw brightness setting label
   String brightnessLabel = "Brightness";
-  int brightnessLabelX = settingsMenuX + (settingsMenuWidth - brightnessLabel.length() * charWidth) / 2;
+  int brightnessLabelX = settingsMenuX + (settingsMenuWidth - (brightnessLabel.length() * settingsCharWidth - fontPadding)) / 2;
   int brightnessLabelY = settingsMenuY + 20;
   tft.setCursor(brightnessLabelX, brightnessLabelY);
   tft.print(brightnessLabel);
@@ -567,32 +578,33 @@ void drawSettingsMenu() {
   brightnessLeftArrow.setBounds(brightnessArrowX1, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
   brightnessLeftArrow.setDirection(ARROW_LEFT);
   brightnessLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessLeftArrow.setBgColor(selectableColor);
-  brightnessLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
+  brightnessLeftArrow.setBgColor(settingsMenuBackgroundColor);
+  brightnessLeftArrow.setTriangleColor(ILI9341_WHITE);
   brightnessLeftArrow.draw(tft);
-
   brightnessRightArrow.setBounds(brightnessArrowX2, brightnessArrowY, settingsArrowWidth, settingsArrowHeight);
   brightnessRightArrow.setDirection(ARROW_RIGHT);
   brightnessRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  brightnessRightArrow.setBgColor(selectableColor);
-  brightnessRightArrow.setTriangleColor(settingsMenuBackgroundColor);
+  brightnessRightArrow.setBgColor(settingsMenuBackgroundColor);
+  brightnessRightArrow.setTriangleColor(ILI9341_WHITE);
   brightnessRightArrow.draw(tft);
 
   // Set up brightness value display
   int maxBrightnessChars = 4;
+  int maxBrightnessWidth = maxBrightnessChars * settingsCharWidth - fontPadding;
   brightnessValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxBrightnessChars * 12) / 2 + 2,
-      brightnessArrowY + (settingsArrowHeight - 16) / 2,
-      maxBrightnessChars * 12
+      settingsMenuX + (settingsMenuWidth - maxBrightnessWidth) / 2,
+      brightnessArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
+      maxBrightnessWidth
   );
   brightnessValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  brightnessValue.setTextSize(2);
+  brightnessValue.setTextSize(settingsTextSize);
+  brightnessValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
   brightnessValue.setValue(String(displayBrightness) + "%");
   brightnessValue.draw(tft);
 
   // Draw speed setting label
   String speedLabel = "Drive Speed";
-  int speedLabelX = settingsMenuX + (settingsMenuWidth - speedLabel.length() * charWidth) / 2;
+  int speedLabelX = settingsMenuX + (settingsMenuWidth - (speedLabel.length() * settingsCharWidth - fontPadding)) / 2;
   int speedLabelY = brightnessLabelY + 70;
   tft.setCursor(speedLabelX, speedLabelY);
   tft.print(speedLabel);
@@ -604,32 +616,33 @@ void drawSettingsMenu() {
   speedLeftArrow.setBounds(speedArrowX1, speedArrowY, settingsArrowWidth, settingsArrowHeight);
   speedLeftArrow.setDirection(ARROW_LEFT);
   speedLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedLeftArrow.setBgColor(selectableColor);
-  speedLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
+  speedLeftArrow.setBgColor(settingsMenuBackgroundColor);
+  speedLeftArrow.setTriangleColor(ILI9341_WHITE);
   speedLeftArrow.draw(tft);
-
   speedRightArrow.setBounds(speedArrowX2, speedArrowY, settingsArrowWidth, settingsArrowHeight);
   speedRightArrow.setDirection(ARROW_RIGHT);
   speedRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  speedRightArrow.setBgColor(selectableColor);
-  speedRightArrow.setTriangleColor(settingsMenuBackgroundColor);
+  speedRightArrow.setBgColor(settingsMenuBackgroundColor);
+  speedRightArrow.setTriangleColor(ILI9341_WHITE);
   speedRightArrow.draw(tft);
 
   // Calculate and store speed value position
   int maxSpeedChars = 8;  // "Standard" is the longest label
+  int maxSpeedWidth = maxSpeedChars * settingsCharWidth - fontPadding;
   speedValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxSpeedChars * 12) / 2 + 2,
-      speedArrowY + (settingsArrowHeight - 16) / 2,
-      maxSpeedChars * 12
+      settingsMenuX + (settingsMenuWidth - maxSpeedWidth) / 2,
+      speedArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
+      maxSpeedWidth
   );
   speedValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  speedValue.setTextSize(2);
+  speedValue.setTextSize(settingsTextSize);
+  speedValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
   speedValue.setValue(DRIVE_SPEED_LABELS[driveSpeed]);
   speedValue.draw(tft);
 
   // Draw grid size setting label
   String distanceLabel = "Drive Distance";
-  int distanceLabelX = settingsMenuX + (settingsMenuWidth - distanceLabel.length() * charWidth) / 2;
+  int distanceLabelX = settingsMenuX + (settingsMenuWidth - (distanceLabel.length() * settingsCharWidth - fontPadding)) / 2;
   int distanceLabelY = speedLabelY + 70;
   tft.setCursor(distanceLabelX, distanceLabelY);
   tft.print(distanceLabel);
@@ -641,26 +654,27 @@ void drawSettingsMenu() {
   distanceLeftArrow.setBounds(distanceArrowX1, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
   distanceLeftArrow.setDirection(ARROW_LEFT);
   distanceLeftArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceLeftArrow.setBgColor(selectableColor);
-  distanceLeftArrow.setTriangleColor(settingsMenuBackgroundColor);
+  distanceLeftArrow.setBgColor(settingsMenuBackgroundColor);
+  distanceLeftArrow.setTriangleColor(ILI9341_WHITE);
   distanceLeftArrow.draw(tft);
-
   distanceRightArrow.setBounds(distanceArrowX2, distanceArrowY, settingsArrowWidth, settingsArrowHeight);
   distanceRightArrow.setDirection(ARROW_RIGHT);
   distanceRightArrow.setTriangleSize(12, 18);  // Explicit triangle size
-  distanceRightArrow.setBgColor(selectableColor);
-  distanceRightArrow.setTriangleColor(settingsMenuBackgroundColor);
+  distanceRightArrow.setBgColor(settingsMenuBackgroundColor);
+  distanceRightArrow.setTriangleColor(ILI9341_WHITE);
   distanceRightArrow.draw(tft);
 
   // Set up distance value display
   int maxSizeChars = 8;  // "Standard" is the longest label
+  int maxSizeWidth = maxSizeChars * settingsCharWidth - fontPadding;
   distanceValue.setPosition(
-      settingsMenuX + (settingsMenuWidth - maxSizeChars * 12) / 2 + 2,
-      distanceArrowY + (settingsArrowHeight - 16) / 2,
-      maxSizeChars * 12
+      settingsMenuX + (settingsMenuWidth - maxSizeWidth) / 2,
+      distanceArrowY + (settingsArrowHeight - settingsTextSize * FONT_CHAR_HEIGHT) / 2,
+      maxSizeWidth
   );
   distanceValue.setColors(settingsMenuBackgroundColor, settingsMenuTextColor);
-  distanceValue.setTextSize(2);
+  distanceValue.setTextSize(settingsTextSize);
+  distanceValue.setFontMetrics(FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
   distanceValue.setValue(DRIVE_DISTANCE_LABELS[driveDistance]);
   distanceValue.draw(tft);
 }

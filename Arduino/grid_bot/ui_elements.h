@@ -75,14 +75,14 @@ public:
   int triangleHeight;  // New attribute for explicit triangle height
   uint16_t triangleColor;  // New attribute for triangle color
 
-  UIArrow() : dir(ARROW_LEFT), triangleWidth(12), triangleHeight(18), triangleColor(ILI9341_DARKGREY) {}  // Default values based on previous 60% of 20x30
+  UIArrow() : dir(ARROW_LEFT), triangleWidth(12), triangleHeight(18), triangleColor(ILI9341_WHITE) {}  // Default values based on previous 60% of 20x30
 
   void setDirection(ArrowDirection d) { dir = d; }
   void setTriangleSize(int width, int height) {  // New setter method
     triangleWidth = width;
     triangleHeight = height;
   }
-  void setTriangleColor(uint16_t color) { triangleColor = color; }  // New setter method
+  void setTriangleColor(uint16_t color) { triangleColor = color; }
 
   // Override the draw method to draw the arrow
   void draw(Adafruit_ILI9341 &tft) const override;
@@ -96,12 +96,16 @@ public:
     uint16_t backgroundColor;
     uint16_t textColor;
     uint8_t textSize;
+    int charWidth;  // NEW: character width in pixels
+    int charHeight; // NEW: character height in pixels
     String value;
 
     UISettingsValue() : x(0), y(0), width(0),
                        backgroundColor(ILI9341_DARKGREY),
                        textColor(ILI9341_WHITE),
                        textSize(2),
+                       charWidth(6),  // Default font char width
+                       charHeight(8), // Default font char height
                        value("") {}
 
     void setPosition(int bx, int by, int w) {
@@ -117,23 +121,14 @@ public:
 
     void setTextSize(uint8_t size) { textSize = size; }
     void setValue(const String &val) { value = val; }
-
-    void draw(Adafruit_ILI9341 &tft) const {
-        // Clear the entire value area
-        tft.fillRect(x, y, width, 16, backgroundColor);
-
-        // Set text properties
-        tft.setTextSize(textSize);
-        tft.setTextColor(textColor);
-        
-        // Calculate centered position for text
-        int charWidth = 6 * textSize;
-        int actualTextWidth = value.length() * charWidth;
-        int textX = x + (width - actualTextWidth) / 2 + 2;
-        
-        tft.setCursor(textX, y);
-        tft.print(value);
+    
+    // NEW: Set font metrics
+    void setFontMetrics(int cw, int ch) {
+        charWidth = cw;
+        charHeight = ch;
     }
+
+    void draw(Adafruit_ILI9341 &tft) const;
 };
 
 #endif
