@@ -43,7 +43,7 @@ public:
   ~GridModel();
   
   // Initialization methods
-  void initGrid(int screenWidth, int screenHeight, int buttonHeight, int buttonMargin);
+  void initGrid(int availableWidth, int availableHeight);
   void resetGridValues();
   void initPath();
   void resetDefaultPath();

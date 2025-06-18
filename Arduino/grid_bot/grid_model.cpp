@@ -46,17 +46,16 @@ GridModel::~GridModel() {
   }
 }
 
-void GridModel::initGrid(int screenWidth, int screenHeight, int buttonHeight, int buttonMargin) {
-  // Calculate grid size based on available screen space
-  int availableHeight = screenHeight - buttonHeight - 1 - buttonMargin;
+void GridModel::initGrid(int availableWidth, int availableHeight) {
+  // Calculate grid size based on available space
   numRows = (availableHeight - 1) / cellSize;
-  numCols = ((screenWidth - 1) / cellSize) - (((screenWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
+  numCols = ((availableWidth - 1) / cellSize) - (((availableWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
 
   // Calculate grid dimensions and offsets
   gridWidth = cellSize * numCols;
   gridHeight = cellSize * numRows;
-  offsetX = (screenWidth - gridWidth - 1) / 2;
-  offsetY = (screenHeight - gridHeight - 1 - buttonHeight - buttonMargin) / 2;
+  offsetX = (availableWidth - gridWidth - 1) / 2;
+  offsetY = (availableHeight - gridHeight - 1) / 2;
 
   // Initialize 2D grid of cell values
   gridVals = new bool*[numRows];

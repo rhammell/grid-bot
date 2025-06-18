@@ -57,19 +57,19 @@ int buttonRunningColor = tft.color565(255, 75, 75);
 int buttonCompleteColor = tft.color565(75, 255, 75);
 int buttonTextColor = ILI9341_WHITE;
 
-// UI elements
+// Button UI elements
 UIIconButton undoButton;
 UITextButton startButton;
 UIIconButton settingsButton;
+
+// Settings menu UI elements
+UISettingsMenu settingsMenu;
 UIArrow brightnessLeftArrow;
 UIArrow brightnessRightArrow;
 UIArrow distanceLeftArrow;
 UIArrow distanceRightArrow;
 UIArrow speedLeftArrow;
 UIArrow speedRightArrow;
-
-// Settings menu
-UISettingsMenu settingsMenu;
 
 // Settings option labels
 const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
@@ -185,7 +185,8 @@ void setup() {
   screenHeight = tft.height();
 
   // Initialize grid model
-  gridModel.initGrid(screenWidth, screenHeight, buttonHeight, buttonMargin);
+  int availableHeight = screenHeight - buttonHeight - buttonMargin - 1;
+  gridModel.initGrid(screenWidth, availableHeight);
 
   // Layout and draw UI
   layoutUI();
@@ -453,9 +454,7 @@ void drawStartButton() {
 }
 
 void drawSettingsButton() {
-  // Button bounds are precomputed in layoutUI()
-
-  // Draw button background
+// Draw button background
   settingsButton.draw(tft);
 }
 
