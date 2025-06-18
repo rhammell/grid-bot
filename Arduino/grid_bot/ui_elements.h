@@ -148,6 +148,8 @@ public:
     int arrowHeight;
     int arrowMarginX;
     int optionSpacing;
+    int labelX;
+    int labelY;
 
     UISettingsOption() : label(""), x(0), y(0), width(0), height(0),
                         backgroundColor(ILI9341_DARKGREY),

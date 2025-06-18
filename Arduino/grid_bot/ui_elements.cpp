@@ -76,8 +76,8 @@ void UISettingsOption::layout() {
     
     // Calculate label position (centered)
     int labelWidth = label.length() * charWidth - fontPadding;
-    int labelX = x + (width - labelWidth) / 2;
-    int labelY = y + 20;
+    labelX = x + (width - labelWidth) / 2;
+    labelY = y + 20;
     
     // Calculate arrow positions
     int arrowY = labelY + 20;
@@ -114,16 +114,7 @@ void UISettingsOption::draw(Adafruit_ILI9341 &tft) const {
     tft.setTextSize(textSize);
     tft.setTextColor(textColor);
     
-    // Calculate character width based on text size
-    int charWidth = 6 * textSize;
-    int fontPadding = textSize;
-    
-    // Calculate label position (centered)
-    int labelWidth = label.length() * charWidth - fontPadding;
-    int labelX = x + (width - labelWidth) / 2;
-    int labelY = y + 20;
-    
-    // Draw label
+    // Draw label using precomputed labelX and labelY
     tft.setCursor(labelX, labelY);
     tft.print(label);
     
