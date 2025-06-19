@@ -264,10 +264,12 @@ void drawGridLines() {
   }
 }
 
+
 void drawGridCells() {
   // Default to drawing entire grid
   drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 }
+
 
 void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
   // Clamp values to grid bounds
@@ -290,7 +292,8 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
           // Check if this cell is within the processed path range
           bool isProcessed = false;
           for (int p = 0; p <= gridModel.getCurrentPathIndex(); p++) {
-            if (i == gridModel.getPath()[p].row && j == gridModel.getPath()[p].col) {
+            PathCell pathCell = gridModel.getPathCell(p);
+            if (i == pathCell.row && j == pathCell.col) {
               isProcessed = true;
               break;
             }
@@ -325,28 +328,25 @@ void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
       // Loop through path point indexes
       for (int p = 0; p < gridModel.getPathLength(); p++) {
 
+        // Get path cell using the existing method
+        PathCell pathCell = gridModel.getPathCell(p);
+        
         // Check if current cell is equal to path point
-        if (i == gridModel.getPath()[p].row && j == gridModel.getPath()[p].col) {
-
-          // Current and next path point
-          PathCell currentPoint = gridModel.getPath()[p];
-          PathCell nextPoint;
+        if (i == pathCell.row && j == pathCell.col) {
 
           // If only one path point, define next point to draw up arrow
           if (gridModel.getPathLength() == 1) {
-            nextPoint = { currentPoint.row - 1, currentPoint.col };
+            drawCellDirection(pathCell.row, pathCell.col, pathCell.row - 1, pathCell.col);
           }
           // If last path point, use current point to draw circle
           else if (p == gridModel.getPathLength() - 1) {
-            nextPoint = currentPoint;
+            drawCellDirection(pathCell.row, pathCell.col, pathCell.row, pathCell.col);
           }
           // If any other path point, use next point in path
           else {
-            nextPoint = gridModel.getPath()[p + 1];
+            PathCell nextPathCell = gridModel.getPathCell(p + 1);
+            drawCellDirection(pathCell.row, pathCell.col, nextPathCell.row, nextPathCell.col);
           }
-
-          // Draw cell arrow using current and next
-          drawCellDirection(currentPoint.row, currentPoint.col, nextPoint.row, nextPoint.col);
         }
       }
     }
@@ -358,8 +358,9 @@ void drawCellDirection(int row, int col, int nextRow, int nextCol) {
   int centerX = col * gridModel.getCellSize() + gridModel.getOffsetX() + (gridModel.getCellSize() / 2);
   int centerY = row * gridModel.getCellSize() + gridModel.getOffsetY() + (gridModel.getCellSize() / 2);
 
-  // If last cell in path draw circle
-  if (row == gridModel.getPath()[gridModel.getPathLength() - 1].row && col == gridModel.getPath()[gridModel.getPathLength() - 1].col) {
+  // If last cell in path draw circle (using existing method)
+  PathCell lastPathCell = gridModel.getPathCell(gridModel.getPathLength() - 1);
+  if (row == lastPathCell.row && col == lastPathCell.col) {
     int circleRadius = 3;
     tft.fillCircle(centerX, centerY, circleRadius, gridModel.getArrowColor());
     return;
