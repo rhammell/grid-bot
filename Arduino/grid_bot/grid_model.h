@@ -33,9 +33,8 @@ private:
   Direction currentDirection;
   
 public:
-  // Constructor and destructor
+  // Constructor
   GridModel();
-  ~GridModel();
   
   // Initialization methods
   void initGrid(int availableWidth, int availableHeight, int cellSize);

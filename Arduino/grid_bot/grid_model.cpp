@@ -25,23 +25,6 @@ GridModel::GridModel() {
   currentDirection = UP;
 }
 
-GridModel::~GridModel() {
-  // Clean up grid memory
-  if (gridVals != nullptr) {
-    for (int i = 0; i < numRows; i++) {
-      delete[] gridVals[i];
-    }
-    delete[] gridVals;
-    gridVals = nullptr;
-  }
-  
-  // Clean up path memory
-  if (path != nullptr) {
-    delete[] path;
-    path = nullptr;
-  }
-}
-
 void GridModel::initGrid(int availableWidth, int availableHeight, int cellSize) {
   // Calculate grid size based on available space
   numRows = (availableHeight - 1) / cellSize;
