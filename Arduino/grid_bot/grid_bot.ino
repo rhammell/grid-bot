@@ -44,21 +44,6 @@ int screenHeight;
 // Grid model instance
 GridModel gridModel;
 
-// Button dimension values
-int buttonHeight = 36;
-int buttonMargin = 2;
-
-// Undo button position params
-int undoButtonWidth = 36;
-int settingsButtonWidth = 36;
-
-// Button display colors
-int buttonIdleColor = tft.color565(75, 75, 225);
-int buttonCountingColor = tft.color565(240, 124, 36);
-int buttonRunningColor = tft.color565(255, 75, 75);
-int buttonCompleteColor = tft.color565(75, 255, 75);
-int buttonTextColor = ILI9341_WHITE;
-
 // Button UI elements
 UIIconButton undoButton;
 UITextButton startButton;
@@ -69,19 +54,6 @@ UISettingsMenu settingsMenu;
 
 // Settings option labels
 const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
-
-// Settings menu text params
-int settingsTextSize = 2;
-
-// Settings menu arrow params
-int settingsArrowWidth = 38;
-int settingsArrowHeight = 30;
-int settingsArrowMarginX = 2;
-
-// Color scheme for settings menu
-uint16_t settingsMenuBackgroundColor = ILI9341_DARKGREY;
-uint16_t settingsMenuTextColor = ILI9341_WHITE;
-uint16_t settingsMenuButtonColor = tft.color565(100, 100, 100);
 
 // States
 enum UIState {
@@ -172,7 +144,7 @@ void setup() {
   screenHeight = tft.height();
 
   // Initialize grid model
-  int availableHeight = screenHeight - buttonHeight - buttonMargin - 1;
+  int availableHeight = screenHeight - BUTTON_HEIGHT - BUTTON_MARGIN - 1;
   gridModel.initGrid(screenWidth, availableHeight);
 
   // Initialize settings menu
@@ -185,26 +157,26 @@ void setup() {
 
 void layoutUI() {
   // Calculate button row relative to grid
-  int y = gridModel.getOffsetY() + gridModel.getGridHeight() + buttonMargin + 1;
+  int y = gridModel.getOffsetY() + gridModel.getGridHeight() + BUTTON_MARGIN + 1;
 
   // Undo button position
-  undoButton.setBounds(gridModel.getOffsetX(), y, undoButtonWidth, buttonHeight);
+  undoButton.setBounds(gridModel.getOffsetX(), y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
   undoButton.setIcon(UNDO_ICON, 24, 24);
   undoButton.setBgColor(ILI9341_DARKGREY);
 
   // Start button position and width
-  int startButtonWidth = gridModel.getGridWidth() - undoButtonWidth - buttonMargin -
-                     settingsButtonWidth - buttonMargin + 1;
-  int startX = undoButton.x + undoButton.width + buttonMargin;
-  startButton.setBounds(startX, y, startButtonWidth, buttonHeight);
-  startButton.setBgColor(buttonIdleColor);
-  startButton.setTextColor(buttonTextColor);
+  int startButtonWidth = gridModel.getGridWidth() - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
+                     SETTINGS_BUTTON_WIDTH - BUTTON_MARGIN + 1;
+  int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
+  startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
+  startButton.setBgColor(BUTTON_IDLE_COLOR);
+  startButton.setTextColor(BUTTON_TEXT_COLOR);
   startButton.setTextSize(2);
   startButton.setLabel("Start");
 
   // Settings button position
-  int settingsX = startButton.x + startButton.width + buttonMargin;
-  settingsButton.setBounds(settingsX, y, settingsButtonWidth, buttonHeight);
+  int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
+  settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
   settingsButton.setIcon(SETTINGS_ICON, 24, 24);
   settingsButton.setBgColor(ILI9341_DARKGREY);
 
@@ -214,10 +186,10 @@ void layoutUI() {
   int menuX = gridModel.getOffsetX() + (gridModel.getGridWidth() - menuWidth) / 2;
   int menuY = gridModel.getOffsetY() + (gridModel.getGridHeight() - menuHeight) / 2;
   settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
-  settingsMenu.setColors(settingsMenuBackgroundColor, ILI9341_WHITE, settingsMenuTextColor);
-  settingsMenu.setTextSize(settingsTextSize);
-  settingsMenu.setArrowSize(settingsArrowWidth, settingsArrowHeight);
-  settingsMenu.setArrowMargin(settingsArrowMarginX);
+  settingsMenu.setColors(SETTINGS_MENU_BG_COLOR, ILI9341_WHITE, SETTINGS_MENU_TEXT_COLOR);
+  settingsMenu.setTextSize(SETTINGS_TEXT_SIZE);
+  settingsMenu.setArrowSize(SETTINGS_ARROW_WIDTH, SETTINGS_ARROW_HEIGHT);
+  settingsMenu.setArrowMargin(SETTINGS_ARROW_MARGIN_X);
   settingsMenu.setOptionSpacing(70);
   settingsMenu.layout();
 }
@@ -264,12 +236,10 @@ void drawGridLines() {
   }
 }
 
-
 void drawGridCells() {
   // Default to drawing entire grid
   drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 }
-
 
 void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
   // Clamp values to grid bounds
@@ -413,24 +383,24 @@ void drawStartButton() {
   switch (uiState) {
     case COUNTING:
       {
-        currentColor = buttonCountingColor;
+        currentColor = BUTTON_COUNTING_COLOR;
         buttonText = String(countdownNumber);
         break;
       }
 
     case RUNNING:
-      currentColor = buttonRunningColor;
+      currentColor = BUTTON_RUNNING_COLOR;
       buttonText = "Stop";
       break;
 
     case COMPLETE:
-      currentColor = buttonCompleteColor;
+      currentColor = BUTTON_COMPLETE_COLOR;
       buttonText = "Done!";
       break;
 
     case IDLE:
     default:
-      currentColor = buttonIdleColor;
+      currentColor = BUTTON_IDLE_COLOR;
       buttonText = "Start";
       break;
   }

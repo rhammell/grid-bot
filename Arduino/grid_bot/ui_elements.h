@@ -4,6 +4,31 @@
 #include <Adafruit_ILI9341.h>
 #include <Arduino.h>
 
+// UI Configuration Constants
+// Button dimensions
+const int BUTTON_HEIGHT = 36;
+const int BUTTON_MARGIN = 2;
+const int UNDO_BUTTON_WIDTH = 36;
+const int SETTINGS_BUTTON_WIDTH = 36;
+
+// Button colors
+const uint16_t BUTTON_IDLE_COLOR = 0x4B4BE1;      // tft.color565(75, 75, 225)
+const uint16_t BUTTON_COUNTING_COLOR = 0xF07C24;  // tft.color565(240, 124, 36)
+const uint16_t BUTTON_RUNNING_COLOR = 0xFF4B4B;   // tft.color565(255, 75, 75)
+const uint16_t BUTTON_COMPLETE_COLOR = 0x4BFF4B;  // tft.color565(75, 255, 75)
+const uint16_t BUTTON_TEXT_COLOR = 0xFFFF;        // ILI9341_WHITE
+
+// Settings menu dimensions
+const int SETTINGS_TEXT_SIZE = 2;
+const int SETTINGS_ARROW_WIDTH = 38;
+const int SETTINGS_ARROW_HEIGHT = 30;
+const int SETTINGS_ARROW_MARGIN_X = 2;
+
+// Settings menu colors
+const uint16_t SETTINGS_MENU_BG_COLOR = 0x8410;   // ILI9341_DARKGREY
+const uint16_t SETTINGS_MENU_TEXT_COLOR = 0xFFFF; // ILI9341_WHITE
+const uint16_t SETTINGS_MENU_BUTTON_COLOR = 0x646464; // tft.color565(100, 100, 100)
+
 // Base class now only contains what is common to ALL buttons.
 class UIButton {
 public:
