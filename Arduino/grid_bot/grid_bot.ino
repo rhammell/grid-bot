@@ -481,7 +481,7 @@ Direction getDirection(int startRow, int startCol, int endRow, int endCol) {
 
 // Function to calculate required turn
 
-int calculateTurn(T currentDir, T targetDir) {
+int calculateTurn(Direction currentDir, Direction targetDir) {
   int diff = static_cast<int>(targetDir) - static_cast<int>(currentDir);
 
   // Normalize to -1 (left) or 1 (right)
