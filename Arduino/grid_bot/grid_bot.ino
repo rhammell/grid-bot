@@ -30,6 +30,10 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define TOUCH_MIN_Y 782
 #define TOUCH_MAX_Y 993
 
+// Font metrics
+const int FONT_CHAR_WIDTH = 6;
+const int FONT_CHAR_HEIGHT = 8;
+
 // Display brightness percent
 int displayBrightness = 60;
 
@@ -62,19 +66,9 @@ UIIconButton settingsButton;
 
 // Settings menu UI elements
 UISettingsMenu settingsMenu;
-UIArrow brightnessLeftArrow;
-UIArrow brightnessRightArrow;
-UIArrow distanceLeftArrow;
-UIArrow distanceRightArrow;
-UIArrow speedLeftArrow;
-UIArrow speedRightArrow;
 
 // Settings option labels
 const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
-
-// Font metrics
-const int FONT_CHAR_WIDTH = 6;
-const int FONT_CHAR_HEIGHT = 8;
 
 // Settings menu text params
 int settingsTextSize = 2;
@@ -88,11 +82,6 @@ int settingsArrowMarginX = 2;
 uint16_t settingsMenuBackgroundColor = ILI9341_DARKGREY;
 uint16_t settingsMenuTextColor = ILI9341_WHITE;
 uint16_t settingsMenuButtonColor = tft.color565(100, 100, 100);
-
-// Replace individual parameters with class instances
-UISettingsValue brightnessValue;
-UISettingsValue distanceValue;
-UISettingsValue speedValue;
 
 // States
 enum UIState {
@@ -186,23 +175,12 @@ void setup() {
   int availableHeight = screenHeight - buttonHeight - buttonMargin - 1;
   gridModel.initGrid(screenWidth, availableHeight);
 
+  // Initialize settings menu
+  settingsMenu.setupOptions(SETTINGS_LABELS, 3);
+
   // Layout and draw UI
   layoutUI();
   drawUI();
-
-  // Initialize settings menu
-  settingsMenu.setupOptions(SETTINGS_LABELS, 3);
-}
-
-void setBrightness() {
-  // Ensure global brightness is in valid range
-  displayBrightness = constrain(displayBrightness, 0, 100);
-
-  // Convert percentage (0-100) to PWM value (0-255)
-  int pwmOutput = map(displayBrightness, 0, 100, 0, 255);
-
-  // Set PWM output
-  analogWrite(TFT_LED, pwmOutput);
 }
 
 void layoutUI() {
@@ -251,6 +229,17 @@ void drawUI() {
   drawUndoButton();
   drawStartButton();
   drawSettingsButton();
+}
+
+void setBrightness() {
+  // Ensure global brightness is in valid range
+  displayBrightness = constrain(displayBrightness, 0, 100);
+
+  // Convert percentage (0-100) to PWM value (0-255)
+  int pwmOutput = map(displayBrightness, 0, 100, 0, 255);
+
+  // Set PWM output
+  analogWrite(TFT_LED, pwmOutput);
 }
 
 void drawGridLines() {

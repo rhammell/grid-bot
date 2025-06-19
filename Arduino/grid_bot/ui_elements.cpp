@@ -77,7 +77,7 @@ void UISettingsOption::layout() {
     // Calculate label position (centered)
     int labelWidth = label.length() * charWidth - fontPadding;
     labelX = x + (width - labelWidth) / 2;
-    labelY = y + 20;
+    labelY = y;
     
     // Calculate arrow positions
     int arrowY = labelY + 20;
@@ -137,7 +137,7 @@ bool UISettingsOption::isRightArrowTouched(int px, int py) const {
 void UISettingsMenu::layout() {
     // Set up each option with proper positioning
     for (int i = 0; i < numOptions; i++) {
-        int optionY = y + (i * optionSpacing);
+        int optionY = y + 20 + (i * optionSpacing);
         options[i].setPosition(x, optionY, width, optionSpacing);
         options[i].setColors(backgroundColor, textColor);
         options[i].setTextSize(textSize);
@@ -187,7 +187,6 @@ void UISettingsMenu::setupOptions(const String* labels, int count) {
     for (int i = 0; i < numOptions; i++) {
         options[i].setLabel(labels[i]);
     }
-    layout();
 }
 
 void UISettingsMenu::updateOptionValue(int optionIndex, const String& value) {
