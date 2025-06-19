@@ -22,7 +22,7 @@ GridModel::GridModel() {
   path = nullptr;
   pathLength = 0;
   currentPathIndex = 0;
-  currentDirection = 0;
+  currentDirection = UP;
 }
 
 GridModel::~GridModel() {
@@ -175,11 +175,11 @@ bool GridModel::isPathComplete() {
   return currentPathIndex >= pathLength - 1;
 }
 
-int GridModel::getCurrentDirection() {
+Direction GridModel::getCurrentDirection() {
   return currentDirection;
 }
 
-void GridModel::setCurrentDirection(int direction) {
+void GridModel::setCurrentDirection(Direction direction) {
   currentDirection = direction;
 }
 
@@ -200,7 +200,7 @@ void GridModel::clearAll() {
   resetDefaultPath();
 }
 
-int GridModel::getNextDirection() {
+Direction GridModel::getNextDirection() {
   // If we're at the last cell, there's no next direction
   if (isPathComplete()) {
     return getCurrentDirection(); // Return current direction as fallback
@@ -211,9 +211,9 @@ int GridModel::getNextDirection() {
   PathCell next = getNextPathCell();
   
   // Calculate direction between them
-  if (next.row < current.row) return 0;  // Up
-  if (next.col > current.col) return 1;  // Right
-  if (next.row > current.row) return 2;  // Down
-  if (next.col < current.col) return 3;  // Left
-  return getCurrentDirection();           // No change
+  if (next.row < current.row) return UP;    // Up
+  if (next.col > current.col) return RIGHT; // Right
+  if (next.row > current.row) return DOWN;  // Down
+  if (next.col < current.col) return LEFT;  // Left
+  return getCurrentDirection();             // No change
 } 

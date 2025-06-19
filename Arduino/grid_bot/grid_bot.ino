@@ -471,17 +471,18 @@ bool isTouchInGrid(int x, int y) {
 }
 
 // Function to calculate direction between two points
-int getDirection(int startRow, int startCol, int endRow, int endCol) {
-  if (endRow < startRow) return 0;  // Up
-  if (endCol > startCol) return 1;  // Right
-  if (endRow > startRow) return 2;  // Down
-  if (endCol < startCol) return 3;  // Left
+Direction getDirection(int startRow, int startCol, int endRow, int endCol) {
+  if (endRow < startRow) return UP;    // Up
+  if (endCol > startCol) return RIGHT; // Right
+  if (endRow > startRow) return DOWN;  // Down
+  if (endCol < startCol) return LEFT;  // Left
   return gridModel.getCurrentDirection();           // No change
 }
 
 // Function to calculate required turn
-int calculateTurn(int currentDir, int targetDir) {
-  int diff = targetDir - currentDir;
+
+int calculateTurn(T currentDir, T targetDir) {
+  int diff = static_cast<int>(targetDir) - static_cast<int>(currentDir);
 
   // Normalize to -1 (left) or 1 (right)
   if (diff == 3) diff = -1;
@@ -502,7 +503,7 @@ void executeMovement() {
     case STOPPED:
       {
         // Get target direction using the new method
-        int targetDirection = gridModel.getNextDirection();
+        Direction targetDirection = gridModel.getNextDirection();
 
         // Check if aligned to target direction
         if (gridModel.getCurrentDirection() == targetDirection) {
@@ -568,7 +569,7 @@ void executeMovement() {
             moveStartTime = millis();
 
             // Get next direction using the new method
-            int nextDirection = gridModel.getNextDirection();
+            Direction nextDirection = gridModel.getNextDirection();
 
             // Update current path point
             gridModel.setCurrentPathIndex(gridModel.getCurrentPathIndex() + 1);
@@ -597,7 +598,7 @@ void executeMovement() {
         if (millis() - moveStartTime >= TURN_MOVE_TIME) {
 
           // Get target direction using the new method
-          int targetDirection = gridModel.getNextDirection();
+          Direction targetDirection = gridModel.getNextDirection();
 
           // Update direction and start driving
           gridModel.setCurrentDirection(targetDirection);
@@ -762,7 +763,7 @@ void loop() {
     if (millis() - countdownStart >= countdownDuration) {
       uiState = RUNNING;
       gridModel.setCurrentPathIndex(0);
-      gridModel.setCurrentDirection(0);
+      gridModel.setCurrentDirection(UP);
       drawStartButton();
       //
     } else {

@@ -3,6 +3,14 @@
 
 #include <Arduino.h>
 
+// Direction enum for grid movement
+enum Direction {
+    UP = 0,
+    RIGHT = 1,
+    DOWN = 2,
+    LEFT = 3
+};
+
 // Path cell structure
 struct PathCell {
   int row;
@@ -22,7 +30,7 @@ private:
   PathCell* path;
   int pathLength;
   int currentPathIndex;
-  int currentDirection;
+  Direction currentDirection;
   
 public:
   // Constructor and destructor
@@ -56,9 +64,9 @@ public:
   bool isPathComplete();
   
   // Direction methods
-  int getCurrentDirection();
-  void setCurrentDirection(int direction);
-  int getNextDirection();
+  Direction getCurrentDirection();
+  void setCurrentDirection(Direction direction);
+  Direction getNextDirection();
   
   // Grid dimension getters
   int getNumRows();
