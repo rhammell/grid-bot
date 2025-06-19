@@ -16,10 +16,10 @@ GridModel::GridModel() {
   currentDirection = UP;
 }
 
-void GridModel::initGrid(int availableWidth, int availableHeight, int cellSize) {
-  // Calculate grid size based on available space
-  numRows = (availableHeight - 1) / cellSize;
-  numCols = ((availableWidth - 1) / cellSize) - (((availableWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
+void GridModel::initGrid(int numRows_, int numCols_) {
+  // Set grid size based on parameters
+  numRows = numRows_;
+  numCols = numCols_;
 
   // Initialize 2D grid of cell values
   gridVals = new bool*[numRows];

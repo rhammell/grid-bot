@@ -37,7 +37,7 @@ public:
   GridModel();
   
   // Initialization methods
-  void initGrid(int availableWidth, int availableHeight, int cellSize);
+  void initGrid(int numRows, int numCols);
   void resetGridValues();
   void initPath();
   void resetDefaultPath();

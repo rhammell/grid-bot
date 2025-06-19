@@ -168,9 +168,14 @@ void setup() {
   screenWidth = tft.width();
   screenHeight = tft.height();
 
-  // Initialize grid model
+  // Calculate grid size
   int availableHeight = screenHeight - BUTTON_HEIGHT - BUTTON_MARGIN - 1;
-  gridModel.initGrid(screenWidth, availableHeight, CELL_SIZE);
+  int availableWidth = screenWidth;
+  int numRows = (availableHeight - 1) / CELL_SIZE;
+  int numCols = ((availableWidth - 1) / CELL_SIZE) - (((availableWidth - 1) / CELL_SIZE) % 2 == 0 ? 1 : 0);
+  
+  // Initialize grid model
+  gridModel.initGrid(numRows, numCols);
 
   // Initialize settings menu
   settingsMenu.setupOptions(SETTINGS_LABELS, 3);
