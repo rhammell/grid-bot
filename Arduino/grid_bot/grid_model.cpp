@@ -1,15 +1,6 @@
 #include "grid_model.h"
 #include <Adafruit_GFX.h>
 
-// Grid and UI color constants
-#define GRID_COLOR         ILI9341_LIGHTGREY
-#define SELECTED_COLOR     ILI9341_BLACK
-#define SELECTABLE_COLOR   ILI9341_GREEN
-#define EMPTY_COLOR        ILI9341_WHITE
-#define ARROW_COLOR        ILI9341_BLUE
-
-#define CELL_SIZE 30
-
 GridModel::GridModel() {
   // Initialize member variables
   numRows = 0;
