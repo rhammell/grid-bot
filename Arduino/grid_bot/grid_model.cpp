@@ -252,4 +252,22 @@ bool GridModel::isInGridBounds(int row, int col) {
 void GridModel::clearAll() {
   resetGridValues();
   resetDefaultPath();
+}
+
+int GridModel::getNextDirection() {
+  // If we're at the last cell, there's no next direction
+  if (isPathComplete()) {
+    return getCurrentDirection(); // Return current direction as fallback
+  }
+  
+  // Get current and next path cells
+  PathCell current = getCurrentPathCell();
+  PathCell next = getNextPathCell();
+  
+  // Calculate direction between them
+  if (next.row < current.row) return 0;  // Up
+  if (next.col > current.col) return 1;  // Right
+  if (next.row > current.row) return 2;  // Down
+  if (next.col < current.col) return 3;  // Left
+  return getCurrentDirection();           // No change
 } 

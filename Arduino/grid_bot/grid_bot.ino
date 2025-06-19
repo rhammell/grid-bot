@@ -137,8 +137,8 @@ const int countdownDuration = 5000;
 int countdownNumber = -1;
 
 // Movement timing constants
-const unsigned long FORWARD_MOVE_TIME = 750;  // Time to move forward one cell
-const unsigned long TURN_MOVE_TIME = 500;     // Time to execute a 90-degree turn
+const unsigned long FORWARD_MOVE_TIME = 2000;  // Time to move forward one cell
+const unsigned long TURN_MOVE_TIME = 2000;     // Time to execute a 90-degree turn
 
 // Current movement tracking
 unsigned long moveStartTime;  // Start time of current movement
@@ -504,31 +504,19 @@ void printCurrentCell(PathCell current, PathCell next) {
 
 // Function to execute next movement
 void executeMovement() {
-
-  // Get current and next points
-  PathCell current = gridModel.getPath()[gridModel.getCurrentPathIndex()];
-  PathCell next = gridModel.getPath()[gridModel.getCurrentPathIndex() + 1];
-
-  // Calculate target direction
-  int targetDirection = getDirection(current.row, current.col, next.row, next.col);
-
   switch (driveState) {
 
     // Stopped driving state
     case STOPPED:
       {
-        // Print current cell being processed
-        printCurrentCell(current, next);
-
-        // Redraw current cell
-        drawGridCells(current.row, current.row, current.col, current.col);
+        // Get target direction using the new method
+        int targetDirection = gridModel.getNextDirection();
 
         // Check if aligned to target direction
         if (gridModel.getCurrentDirection() == targetDirection) {
 
           // Set driving flags
           driveState = DRIVING;
-          moveStartTime = millis();
 
           // Here you would add actual motor control:
           // driveForward();
@@ -540,7 +528,6 @@ void executeMovement() {
 
           // Set turning flags
           driveState = TURNING;
-          moveStartTime = millis();
 
           // Get turn direction
           int turn = calculateTurn(gridModel.getCurrentDirection(), targetDirection);
@@ -552,29 +539,29 @@ void executeMovement() {
           Serial.print("Turning ");
           Serial.println(turn < 0 ? "left" : "right");
         }
+
+        // Set move start time
+        moveStartTime = millis();
+
         break;
       }
 
     // Driving state
     case DRIVING:
       {
-
         // Check if driving movement is complete
         if (millis() - moveStartTime >= FORWARD_MOVE_TIME) {
 
-          // Update current path point
-          gridModel.setCurrentPathIndex(gridModel.getCurrentPathIndex() + 1);
-          moveStartTime = millis();  // Reset timer for next movement
+          // Get current path cell for redrawing
+          PathCell current = gridModel.getCurrentPathCell();
+          drawGridCells(current.row, current.row, current.col, current.col);
 
           // Check if current path point is the last
-          if (gridModel.getCurrentPathIndex() >= gridModel.getPathLength() - 1) {
+          if (gridModel.isPathComplete()) {
 
             // Here you would stop motors:
             // stopMotors();
             Serial.println("Path complete");
-
-            // Redraw current cell
-            drawGridCells(current.row, current.row, current.col, current.col);
 
             // Update UI and driving state
             uiState = COMPLETE;
@@ -585,16 +572,14 @@ void executeMovement() {
           // Current path point is not the last
           else {
 
-            // Calculate next direction
-            current = gridModel.getPath()[gridModel.getCurrentPathIndex()];
-            next = gridModel.getPath()[gridModel.getCurrentPathIndex() + 1];
-            int nextDirection = getDirection(current.row, current.col, next.row, next.col);
+            // Reset timer for next movement
+            moveStartTime = millis();
 
-            // Print current cell being processed
-            printCurrentCell(current, next);
+            // Get next direction using the new method
+            int nextDirection = gridModel.getNextDirection();
 
-            // Redraw current cell
-            drawGridCells(current.row, current.row, current.col, current.col);
+            // Update current path point
+            gridModel.setCurrentPathIndex(gridModel.getCurrentPathIndex() + 1);
 
             // If direction changes, stop for turn
             if (nextDirection != gridModel.getCurrentDirection()) {
@@ -616,9 +601,11 @@ void executeMovement() {
     // Turning state
     case TURNING:
       {
-
         // Check if turn is complete
         if (millis() - moveStartTime >= TURN_MOVE_TIME) {
+
+          // Get target direction using the new method
+          int targetDirection = gridModel.getNextDirection();
 
           // Update direction and start driving
           gridModel.setCurrentDirection(targetDirection);

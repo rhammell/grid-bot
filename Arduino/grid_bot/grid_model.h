@@ -71,6 +71,7 @@ public:
   // Direction methods
   int getCurrentDirection();
   void setCurrentDirection(int direction);
+  int getNextDirection();
   
   // Grid dimension getters
   int getNumRows();
