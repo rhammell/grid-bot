@@ -14,11 +14,6 @@ private:
   // Grid dimensions
   int numRows;
   int numCols;
-  int cellSize;
-  int gridWidth;
-  int gridHeight;
-  int offsetX;
-  int offsetY;
   
   // Grid data
   bool** gridVals;
@@ -29,21 +24,13 @@ private:
   int currentPathIndex;
   int currentDirection;
   
-  // Grid colors
-  uint16_t backgroundColor;
-  uint16_t selectedColor;
-  uint16_t emptyColor;
-  uint16_t gridColor;
-  uint16_t selectableColor;
-  uint16_t arrowColor;
-
 public:
   // Constructor and destructor
   GridModel();
   ~GridModel();
   
   // Initialization methods
-  void initGrid(int availableWidth, int availableHeight);
+  void initGrid(int availableWidth, int availableHeight, int cellSize);
   void resetGridValues();
   void initPath();
   void resetDefaultPath();
@@ -76,19 +63,6 @@ public:
   // Grid dimension getters
   int getNumRows();
   int getNumCols();
-  int getCellSize();
-  int getGridWidth();
-  int getGridHeight();
-  int getOffsetX();
-  int getOffsetY();
-  
-  // Color getters
-  uint16_t getBackgroundColor();
-  uint16_t getSelectedColor();
-  uint16_t getEmptyColor();
-  uint16_t getGridColor();
-  uint16_t getSelectableColor();
-  uint16_t getArrowColor();
   
   // Utility methods
   bool isInGridBounds(int row, int col);

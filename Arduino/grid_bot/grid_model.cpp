@@ -1,15 +1,19 @@
 #include "grid_model.h"
 #include <Adafruit_GFX.h>
 
+// Grid and UI color constants
+#define GRID_COLOR         ILI9341_LIGHTGREY
+#define SELECTED_COLOR     ILI9341_BLACK
+#define SELECTABLE_COLOR   ILI9341_GREEN
+#define EMPTY_COLOR        ILI9341_WHITE
+#define ARROW_COLOR        ILI9341_BLUE
+
+#define CELL_SIZE 30
+
 GridModel::GridModel() {
   // Initialize member variables
   numRows = 0;
   numCols = 0;
-  cellSize = 30; // Default cell size
-  gridWidth = 0;
-  gridHeight = 0;
-  offsetX = 0;
-  offsetY = 0;
   
   // Initialize grid data
   gridVals = nullptr;
@@ -19,14 +23,6 @@ GridModel::GridModel() {
   pathLength = 0;
   currentPathIndex = 0;
   currentDirection = 0;
-  
-  // Initialize colors (these will be set properly when grid is initialized)
-  backgroundColor = 0x0000; // Black
-  selectedColor = 0x0000;   // Black
-  emptyColor = 0xFFFF;      // White
-  gridColor = 0x8410;       // Dark grey
-  selectableColor = 0x07E0; // Green
-  arrowColor = 0xFFFF;      // White
 }
 
 GridModel::~GridModel() {
@@ -46,16 +42,10 @@ GridModel::~GridModel() {
   }
 }
 
-void GridModel::initGrid(int availableWidth, int availableHeight) {
+void GridModel::initGrid(int availableWidth, int availableHeight, int cellSize) {
   // Calculate grid size based on available space
   numRows = (availableHeight - 1) / cellSize;
   numCols = ((availableWidth - 1) / cellSize) - (((availableWidth - 1) / cellSize) % 2 == 0 ? 1 : 0);
-
-  // Calculate grid dimensions and offsets
-  gridWidth = cellSize * numCols;
-  gridHeight = cellSize * numRows;
-  offsetX = (availableWidth - gridWidth - 1) / 2;
-  offsetY = (availableHeight - gridHeight - 1) / 2;
 
   // Initialize 2D grid of cell values
   gridVals = new bool*[numRows];
@@ -199,50 +189,6 @@ int GridModel::getNumRows() {
 
 int GridModel::getNumCols() {
   return numCols;
-}
-
-int GridModel::getCellSize() {
-  return cellSize;
-}
-
-int GridModel::getGridWidth() {
-  return gridWidth;
-}
-
-int GridModel::getGridHeight() {
-  return gridHeight;
-}
-
-int GridModel::getOffsetX() {
-  return offsetX;
-}
-
-int GridModel::getOffsetY() {
-  return offsetY;
-}
-
-uint16_t GridModel::getBackgroundColor() {
-  return backgroundColor;
-}
-
-uint16_t GridModel::getSelectedColor() {
-  return selectedColor;
-}
-
-uint16_t GridModel::getEmptyColor() {
-  return emptyColor;
-}
-
-uint16_t GridModel::getGridColor() {
-  return gridColor;
-}
-
-uint16_t GridModel::getSelectableColor() {
-  return selectableColor;
-}
-
-uint16_t GridModel::getArrowColor() {
-  return arrowColor;
 }
 
 bool GridModel::isInGridBounds(int row, int col) {
