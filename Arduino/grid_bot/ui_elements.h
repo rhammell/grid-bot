@@ -231,8 +231,6 @@ public:
 
     void layout();
     void draw(Adafruit_ILI9341 &tft) const;
-    bool isLeftArrowTouched(int px, int py) const;
-    bool isRightArrowTouched(int px, int py) const;
 };
 
 class UISettingsMenu {
@@ -287,9 +285,7 @@ public:
     void layout();
     void draw(Adafruit_ILI9341 &tft) const;
     int getTouchedOption(int px, int py) const; // Returns option index or -1 if none
-    bool isLeftArrowTouched(int px, int py, int optionIndex) const;
-    bool isRightArrowTouched(int px, int py, int optionIndex) const;
-    
+
     // Helper methods for setup and updates
     void setupOptions(const String* labels, int count);
     void updateOptionValue(int optionIndex, const String& value);

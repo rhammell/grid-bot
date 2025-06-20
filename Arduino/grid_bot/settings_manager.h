@@ -17,6 +17,9 @@ enum DriveDistance {
   DISTANCE_EXTENDED
 };
 
+// Setting option enum
+enum SettingOption { BRIGHTNESS, DRIVE_SPEED, DRIVE_DISTANCE };
+
 // Settings option labels
 extern const String SETTINGS_LABELS[];
 extern const char* DRIVE_SPEED_LABELS[];
@@ -58,6 +61,9 @@ public:
   
   // Utility methods
   void resetToDefaults();
+  
+  // New method to adjust settings
+  void adjustSetting(SettingOption option, int direction);
 };
 
 #endif // SETTINGS_MANAGER_H 

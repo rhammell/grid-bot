@@ -497,12 +497,12 @@ void loop() {
       
       if (touchedOption >= 0) {
         // Check for arrow touches on the specific option
-        if (settingsMenu.isLeftArrowTouched(pixelX, pixelY, touchedOption)) {
-          handleSettingsLeftArrow(touchedOption);
+        if (settingsMenu.options[touchedOption].leftArrow.contains(pixelX, pixelY)) {
+          handleSettingsArrow(static_cast<SettingOption>(touchedOption), -1);
           delay(250);
         }
-        else if (settingsMenu.isRightArrowTouched(pixelX, pixelY, touchedOption)) {
-          handleSettingsRightArrow(touchedOption);
+        else if (settingsMenu.options[touchedOption].rightArrow.contains(pixelX, pixelY)) {
+          handleSettingsArrow(static_cast<SettingOption>(touchedOption), 1);
           delay(250);
         }
       }
@@ -544,38 +544,18 @@ void loop() {
   delay(50);
 }
 
-// New helper functions for settings handling
-void handleSettingsLeftArrow(int optionIndex) {
-  switch (optionIndex) {
-    case 0: // Brightness
-      settingsManager.adjustBrightness(-10);
+// New helper function for settings handling using enum and direction
+void handleSettingsArrow(SettingOption option, int direction) {
+  settingsManager.adjustSetting(option, direction);
+  switch (option) {
+    case BRIGHTNESS:
       setBrightness();
       updateBrightnessDisplay();
       break;
-    case 1: // Drive Speed
-      settingsManager.decreaseDriveSpeed();
+    case DRIVE_SPEED:
       updateDriveSpeedDisplay();
       break;
-    case 2: // Drive Distance
-      settingsManager.decreaseDriveDistance();
-      updateDriveDistanceDisplay();
-      break;
-  }
-}
-
-void handleSettingsRightArrow(int optionIndex) {
-  switch (optionIndex) {
-    case 0: // Brightness
-      settingsManager.adjustBrightness(10);
-      setBrightness();
-      updateBrightnessDisplay();
-      break;
-    case 1: // Drive Speed
-      settingsManager.increaseDriveSpeed();
-      updateDriveSpeedDisplay();
-      break;
-    case 2: // Drive Distance
-      settingsManager.increaseDriveDistance();
+    case DRIVE_DISTANCE:
       updateDriveDistanceDisplay();
       break;
   }

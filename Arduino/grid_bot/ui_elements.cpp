@@ -125,14 +125,6 @@ void UISettingsOption::draw(Adafruit_ILI9341 &tft) const {
     value.draw(tft);
 }
 
-bool UISettingsOption::isLeftArrowTouched(int px, int py) const {
-    return leftArrow.contains(px, py);
-}
-
-bool UISettingsOption::isRightArrowTouched(int px, int py) const {
-    return rightArrow.contains(px, py);
-}
-
 void UISettingsMenu::layout() {
     // Set up each option with proper positioning
     for (int i = 0; i < numOptions; i++) {
@@ -165,20 +157,6 @@ int UISettingsMenu::getTouchedOption(int px, int py) const {
         }
     }
     return -1;
-}
-
-bool UISettingsMenu::isLeftArrowTouched(int px, int py, int optionIndex) const {
-    if (optionIndex >= 0 && optionIndex < numOptions) {
-        return options[optionIndex].isLeftArrowTouched(px, py);
-    }
-    return false;
-}
-
-bool UISettingsMenu::isRightArrowTouched(int px, int py, int optionIndex) const {
-    if (optionIndex >= 0 && optionIndex < numOptions) {
-        return options[optionIndex].isRightArrowTouched(px, py);
-    }
-    return false;
 }
 
 void UISettingsMenu::setupOptions(const String* labels, int count) {

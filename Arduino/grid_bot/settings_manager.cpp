@@ -95,4 +95,20 @@ void SettingsManager::resetToDefaults() {
   displayBrightness = 60;
   driveSpeed = SPEED_STANDARD;
   driveDistance = DISTANCE_STANDARD;
+}
+
+void SettingsManager::adjustSetting(SettingOption option, int direction) {
+    switch (option) {
+        case BRIGHTNESS:
+            adjustBrightness(10 * direction);
+            break;
+        case DRIVE_SPEED:
+            if (direction < 0) decreaseDriveSpeed();
+            else increaseDriveSpeed();
+            break;
+        case DRIVE_DISTANCE:
+            if (direction < 0) decreaseDriveDistance();
+            else increaseDriveDistance();
+            break;
+    }
 } 
