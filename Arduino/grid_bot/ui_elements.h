@@ -22,26 +22,26 @@ const int SETTINGS_BUTTON_WIDTH = 36;
 const uint16_t BACKGROUND_COLOR = 0x0000; // Black
 
 // Button colors
-const uint16_t BUTTON_BACKGROUND_COLOR = 0x8430;// Dark grey (132, 132, 132)
+const uint16_t BUTTON_BACKGROUND_COLOR = ILI9341_DARKGREY;
 const uint16_t BUTTON_IDLE_COLOR =  0x4a7f;     // Blue (75, 75, 225)
 const uint16_t BUTTON_COUNTING_COLOR = 0xebe4;  // Orange (240, 124, 36)
 const uint16_t BUTTON_RUNNING_COLOR = 0xfa69;   // Red (255, 75, 75)
 const uint16_t BUTTON_COMPLETE_COLOR = 0x4fe9;  // Green (75, 255, 75)
-const uint16_t BUTTON_TEXT_COLOR = 0xFFFF;      // White (255, 255, 255)
+const uint16_t BUTTON_TEXT_COLOR = ILI9341_WHITE;     
 
 // Grid colors
-const uint16_t GRID_BACKGROUND_COLOR = 0x0000;    // Black (0, 0, 0)
-const uint16_t GRID_SELECTED_COLOR = 0x0000;      // Black (0, 0, 0)
-const uint16_t GRID_EMPTY_COLOR = 0xFFFF;         // White (255, 255, 255)
-const uint16_t GRID_LINE_COLOR = 0x8430;          // Dark grey (132, 132, 132)
+const uint16_t GRID_BACKGROUND_COLOR = ILI9341_BLACK;
+const uint16_t GRID_SELECTED_COLOR = ILI9341_BLACK;
+const uint16_t GRID_EMPTY_COLOR = ILI9341_WHITE; 
+const uint16_t GRID_LINE_COLOR = ILI9341_DARKGREY;
 const uint16_t GRID_SELECTABLE_COLOR = 0x4fe9;    // Green (75, 255, 75)
-const uint16_t GRID_ARROW_COLOR = 0xFFFF;         // White (255, 255, 255)
+const uint16_t GRID_ARROW_COLOR = ILI9341_WHITE;
 
 // Settings menu colors
-const uint16_t SETTINGS_BACKGROUND_COLOR = 0x8430;     // Dark grey (132, 132, 132)
-const uint16_t SETTINGS_TEXT_COLOR = 0xFFFF;   // White (255, 255, 255)
-const uint16_t SETTINGS_BORDER_COLOR = 0xFFFF;   // White (255, 255, 255)
-const uint16_t SETTINGS_ARROW_COLOR = 0xFFFF;   // White (255, 255, 255)
+const uint16_t SETTINGS_BACKGROUND_COLOR = ILI9341_DARKGREY;
+const uint16_t SETTINGS_TEXT_COLOR = ILI9341_WHITE;
+const uint16_t SETTINGS_BORDER_COLOR = ILI9341_WHITE;
+const uint16_t SETTINGS_ARROW_COLOR = ILI9341_WHITE;
 
 // UI State enum (moved from grid_bot.ino)
 enum UIState {
