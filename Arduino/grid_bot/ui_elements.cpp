@@ -1,4 +1,5 @@
 #include "ui_elements.h"
+#include "grid_model.h"
 
 // This helper is still useful for subclasses
 void UIButton::draw(Adafruit_ILI9341 &tft) const {
@@ -199,4 +200,131 @@ void UISettingsMenu::redrawOption(int optionIndex, Adafruit_ILI9341 &tft) const 
     if (optionIndex >= 0 && optionIndex < numOptions) {
         options[optionIndex].draw(tft);
     }
+}
+
+// --- UIGrid implementation ---
+UIGrid::UIGrid() : x(0), y(0), width(0), height(0), numRows(0), numCols(0) {}
+
+void UIGrid::setSize(int rows, int cols) {
+    numRows = rows;
+    numCols = cols;
+}
+
+void UIGrid::setBounds(int bx, int by, int w, int h) {
+    x = bx;
+    y = by;
+    width = w;
+    height = h;
+}
+
+void UIGrid::drawGridLines(Adafruit_ILI9341 &tft) {
+    for (int i = 0; i < numRows + 1; i++) {
+        tft.drawLine(
+            x,
+            i * CELL_SIZE + y,
+            x + width,
+            i * CELL_SIZE + y,
+            GRID_LINE_COLOR);
+    }
+    for (int i = 0; i < numCols + 1; i++) {
+        tft.drawLine(
+            i * CELL_SIZE + x,
+            y,
+            i * CELL_SIZE + x,
+            y + height,
+            GRID_LINE_COLOR);
+    }
+}
+
+// Helper for drawing cell direction (private to this file)
+namespace {
+void drawCellDirection(Adafruit_ILI9341 &tft, GridModel &model, int gridX, int gridY, int row, int col, int nextRow, int nextCol, uint16_t arrowColor) {
+    int centerX = col * CELL_SIZE + gridX + (CELL_SIZE / 2);
+    int centerY = row * CELL_SIZE + gridY + (CELL_SIZE / 2);
+    PathCell lastPathCell = model.getPathCell(model.getPathLength() - 1);
+    if (row == lastPathCell.row && col == lastPathCell.col) {
+        int circleRadius = 3;
+        tft.fillCircle(centerX, centerY, circleRadius, arrowColor);
+        return;
+    }
+    int dx = nextCol - col;
+    int dy = nextRow - row;
+    if (dx > 0) {
+        tft.fillTriangle(centerX - 3, centerY - 3, centerX - 3, centerY + 3, centerX + 3, centerY, arrowColor);
+    } else if (dx < 0) {
+        tft.fillTriangle(centerX + 3, centerY - 3, centerX + 3, centerY + 3, centerX - 3, centerY, arrowColor);
+    } else if (dy > 0) {
+        tft.fillTriangle(centerX - 3, centerY - 3, centerX + 3, centerY - 3, centerX, centerY + 3, arrowColor);
+    } else if (dy < 0) {
+        tft.fillTriangle(centerX - 3, centerY + 3, centerX + 3, centerY + 3, centerX, centerY - 3, arrowColor);
+    }
+}
+}
+
+void UIGrid::drawGridCells(Adafruit_ILI9341 &tft, GridModel &model, UIState state) {
+    drawGridCells(tft, model, state, 0, model.getNumRows() - 1, 0, model.getNumCols() - 1);
+}
+
+void UIGrid::drawGridCells(Adafruit_ILI9341 &tft, GridModel &model, UIState state, int startRow, int endRow, int startCol, int endCol) {
+    // Clamp values to grid bounds
+    startRow = max(0, min(startRow, model.getNumRows() - 1));
+    endRow = max(0, min(endRow, model.getNumRows() - 1));
+    startCol = max(0, min(startCol, model.getNumCols() - 1));
+    endCol = max(0, min(endCol, model.getNumCols() - 1));
+
+    for (int i = startRow; i <= endRow; i++) {
+        for (int j = startCol; j <= endCol; j++) {
+            int color;
+            if (model.isCellActivated(i, j)) {
+                if (state == RUNNING || state == COMPLETE) {
+                    bool isProcessed = false;
+                    for (int p = 0; p <= model.getCurrentPathIndex(); p++) {
+                        PathCell pathCell = model.getPathCell(p);
+                        if (i == pathCell.row && j == pathCell.col) {
+                            isProcessed = true;
+                            break;
+                        }
+                    }
+                    if (isProcessed) {
+                        color = GRID_SELECTABLE_COLOR;
+                    } else {
+                        color = GRID_SELECTED_COLOR;
+                    }
+                } else {
+                    color = GRID_SELECTED_COLOR;
+                }
+            } else if (state == IDLE && model.isSelectable(i, j)) {
+                color = GRID_SELECTABLE_COLOR;
+            } else {
+                color = GRID_EMPTY_COLOR;
+            }
+            tft.fillRect(
+                j * CELL_SIZE + x + 1,
+                i * CELL_SIZE + y + 1,
+                CELL_SIZE - 1,
+                CELL_SIZE - 1,
+                color);
+            for (int p = 0; p < model.getPathLength(); p++) {
+                PathCell pathCell = model.getPathCell(p);
+                if (i == pathCell.row && j == pathCell.col) {
+                    if (model.getPathLength() == 1) {
+                        drawCellDirection(tft, model, x, y, pathCell.row, pathCell.col, pathCell.row - 1, pathCell.col, GRID_ARROW_COLOR);
+                    } else if (p == model.getPathLength() - 1) {
+                        drawCellDirection(tft, model, x, y, pathCell.row, pathCell.col, pathCell.row, pathCell.col, GRID_ARROW_COLOR);
+                    } else {
+                        PathCell nextPathCell = model.getPathCell(p + 1);
+                        drawCellDirection(tft, model, x, y, pathCell.row, pathCell.col, nextPathCell.row, nextPathCell.col, GRID_ARROW_COLOR);
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool UIGrid::isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {
+    return x >= rectX && x <= rectX + rectWidth && y >= rectY && y <= rectY + rectHeight;
+}
+
+bool UIGrid::contains(int x, int y) const {
+    return isPointInRect(x, y, this->x, this->y, this->width - 1, this->height - 1);
 }

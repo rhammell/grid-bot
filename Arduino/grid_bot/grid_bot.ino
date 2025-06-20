@@ -6,8 +6,6 @@
 #include "ui_elements.h"
 #include "grid_model.h"
 
-#define CELL_SIZE 30
-
 // TFT Pins
 #define TFT_CS 17
 #define TFT_DC 18
@@ -51,18 +49,10 @@ UIIconButton undoButton;
 UITextButton startButton;
 UIIconButton settingsButton;
 UISettingsMenu settingsMenu;
+UIGrid uiGrid;
 
 // Settings option labels
 const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
-
-// States
-enum UIState {
-  IDLE,
-  COUNTING,
-  RUNNING,
-  SETTINGS,
-  COMPLETE
-};
 
 // Set current state
 UIState uiState = IDLE;
@@ -116,31 +106,6 @@ const unsigned long TURN_MOVE_TIME = 2000;     // Time to execute a 90-degree tu
 unsigned long moveStartTime;  // Start time of current movement
 bool isTurning = false;        // Whether bot is currently executing a turn
 
-uint16_t backgroundColor = 0x0000; // Black
-uint16_t selectedColor = 0x0000;   // Black
-uint16_t emptyColor = 0xFFFF;      // White
-uint16_t gridColor = 0x8410;       // Dark grey
-uint16_t selectableColor = 0x07E0; // Green
-uint16_t arrowColor = 0xFFFF;      // White
-
-// Helper functions to calculate grid layout on demand
-int getGridWidth() {
-  return gridModel.getNumCols() * CELL_SIZE;
-}
-
-int getGridHeight() {
-  return gridModel.getNumRows() * CELL_SIZE;
-}
-
-int getOffsetX() {
-  return (screenWidth - getGridWidth()) / 2;
-}
-
-int getOffsetY() {
-  // Place grid at the top, leaving space for buttons at the bottom
-  return 0;
-}
-
 void setup() {
   Serial.begin(9600);
 
@@ -162,7 +127,7 @@ void setup() {
   tft.setRotation(0);
 
   // Fill screen with black background
-  tft.fillScreen(ILI9341_BLACK);
+  tft.fillScreen(BACKGROUND_COLOR);
 
   // Dynamically get screen dimensions
   screenWidth = tft.width();
@@ -170,15 +135,19 @@ void setup() {
 
   // Calculate grid size
   int availableHeight = screenHeight - BUTTON_HEIGHT - BUTTON_MARGIN - 1;
-  int availableWidth = screenWidth;
-  int numRows = (availableHeight - 1) / CELL_SIZE;
-  int numCols = ((availableWidth - 1) / CELL_SIZE) - (((availableWidth - 1) / CELL_SIZE) % 2 == 0 ? 1 : 0);
+  int availableWidth = screenWidth - 1;
+  int numRows = availableHeight / CELL_SIZE;
+  int numCols = (availableWidth / CELL_SIZE) - ((availableWidth / CELL_SIZE) % 2 == 0 ? 1 : 0);
   
   // Initialize grid model
   gridModel.initGrid(numRows, numCols);
+  uiGrid.setSize(numRows, numCols);
 
   // Initialize settings menu
   settingsMenu.setupOptions(SETTINGS_LABELS, 3);
+  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
+  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
+  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
 
   // Layout and draw UI
   layoutUI();
@@ -186,51 +155,61 @@ void setup() {
 }
 
 void layoutUI() {
-  // Calculate button row relative to grid
-  int y = getOffsetY() + getGridHeight() + BUTTON_MARGIN + 1;
+    // Calculate grid bounds
+    int gridWidth = gridModel.getNumCols() * CELL_SIZE;
+    int gridHeight = gridModel.getNumRows() * CELL_SIZE;
+    int gridX = (screenWidth - (gridWidth + 1)) / 2;
 
-  // Undo button position
-  undoButton.setBounds(getOffsetX(), y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
-  undoButton.setIcon(UNDO_ICON, 24, 24);
-  undoButton.setBgColor(ILI9341_DARKGREY);
+    // Center the grid + button row as a group vertically
+    int totalGroupHeight = gridHeight + BUTTON_MARGIN + BUTTON_HEIGHT + 1;
+    int gridY = (screenHeight - totalGroupHeight) / 2;
+    uiGrid.setBounds(gridX, gridY, gridWidth, gridHeight);
 
-  // Start button position and width
-  int startButtonWidth = getGridWidth() - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
-                     SETTINGS_BUTTON_WIDTH - BUTTON_MARGIN + 1;
-  int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
-  startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
-  startButton.setBgColor(BUTTON_IDLE_COLOR);
-  startButton.setTextColor(BUTTON_TEXT_COLOR);
-  startButton.setTextSize(2);
-  startButton.setLabel("Start");
+    // Button row y position
+    int y = gridY + gridHeight + BUTTON_MARGIN + 1;
 
-  // Settings button position
-  int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
-  settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
-  settingsButton.setIcon(SETTINGS_ICON, 24, 24);
-  settingsButton.setBgColor(ILI9341_DARKGREY);
+    // Undo button position
+    undoButton.setBounds(gridX, y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
+    undoButton.setIcon(UNDO_ICON, 24, 24);
+    undoButton.setBgColor(ILI9341_DARKGREY);
 
-  // Layout settings menu
-  int menuWidth = getGridWidth() * 0.85;
-  int menuHeight = 225;
-  int menuX = getOffsetX() + (getGridWidth() - menuWidth) / 2;
-  int menuY = getOffsetY() + (getGridHeight() - menuHeight) / 2;
-  settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
-  settingsMenu.setColors(SETTINGS_MENU_BG_COLOR, ILI9341_WHITE, SETTINGS_MENU_TEXT_COLOR);
-  settingsMenu.setTextSize(SETTINGS_TEXT_SIZE);
-  settingsMenu.setArrowSize(SETTINGS_ARROW_WIDTH, SETTINGS_ARROW_HEIGHT);
-  settingsMenu.setArrowMargin(SETTINGS_ARROW_MARGIN_X);
-  settingsMenu.setOptionSpacing(70);
-  settingsMenu.layout();
+    // Start button position and width
+    int startButtonWidth = gridWidth - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
+                       SETTINGS_BUTTON_WIDTH - BUTTON_MARGIN + 1;
+    int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
+    startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
+    startButton.setBgColor(BUTTON_IDLE_COLOR);
+    startButton.setTextColor(BUTTON_TEXT_COLOR);
+    startButton.setTextSize(2);
+    startButton.setLabel("Start");
+
+    // Settings button position
+    int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
+    settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
+    settingsButton.setIcon(SETTINGS_ICON, 24, 24);
+    settingsButton.setBgColor(ILI9341_DARKGREY);
+
+    // Layout settings menu
+    int menuWidth = gridWidth * 0.85;
+    int menuHeight = 225;
+    int menuX = gridX + (gridWidth - menuWidth) / 2;
+    int menuY = gridY + (gridHeight - menuHeight) / 2;
+    settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
+    settingsMenu.setColors(SETTINGS_MENU_BG_COLOR, ILI9341_WHITE, SETTINGS_MENU_TEXT_COLOR);
+    settingsMenu.setTextSize(SETTINGS_TEXT_SIZE);
+    settingsMenu.setArrowSize(SETTINGS_ARROW_WIDTH, SETTINGS_ARROW_HEIGHT);
+    settingsMenu.setArrowMargin(SETTINGS_ARROW_MARGIN_X);
+    settingsMenu.setOptionSpacing(70);
+    settingsMenu.layout();
 }
 
 void drawUI() {
   // Draw all UI elements
-  drawGridLines();
-  drawGridCells();
-  drawUndoButton();
-  drawStartButton();
-  drawSettingsButton();
+  uiGrid.drawGridLines(tft);
+  uiGrid.drawGridCells(tft, gridModel, uiState);
+  undoButton.draw(tft);
+  startButton.draw(tft);
+  settingsButton.draw(tft);
 }
 
 void setBrightness() {
@@ -244,212 +223,33 @@ void setBrightness() {
   analogWrite(TFT_LED, pwmOutput);
 }
 
-void drawGridLines() {
-  for (int i = 0; i < gridModel.getNumRows() + 1; i++) {
-    tft.drawLine(
-      getOffsetX(),
-      i * CELL_SIZE + getOffsetY(),
-      getOffsetX() + getGridWidth(),
-      i * CELL_SIZE + getOffsetY(),
-      gridColor);
-  }
-  for (int i = 0; i < gridModel.getNumCols() + 1; i++) {
-    tft.drawLine(
-      i * CELL_SIZE + getOffsetX(),
-      getOffsetY(),
-      i * CELL_SIZE + getOffsetX(),
-      getOffsetY() + getGridHeight(),
-      gridColor);
-  }
-}
-
-void drawGridCells() {
-  // Default to drawing entire grid
-  drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
-}
-
-void drawGridCells(int startRow, int endRow, int startCol, int endCol) {
-  // Clamp values to grid bounds
-  startRow = max(0, min(startRow, gridModel.getNumRows() - 1));
-  endRow = max(0, min(endRow, gridModel.getNumRows() - 1));
-  startCol = max(0, min(startCol, gridModel.getNumCols() - 1));
-  endCol = max(0, min(endCol, gridModel.getNumCols() - 1));
-
-  // Loop through row and col values
-  for (int i = startRow; i <= endRow; i++) {
-    for (int j = startCol; j <= endCol; j++) {
-
-      // Determine cell color
-      int color;
-
-      // Check if cell is activated
-      if (gridModel.isCellActivated(i, j)) {
-
-        if (uiState == RUNNING || uiState == COMPLETE) {
-          // Check if this cell is within the processed path range
-          bool isProcessed = false;
-          for (int p = 0; p <= gridModel.getCurrentPathIndex(); p++) {
-            PathCell pathCell = gridModel.getPathCell(p);
-            if (i == pathCell.row && j == pathCell.col) {
-              isProcessed = true;
-              break;
-            }
-          }
-          
-          if (isProcessed) {
-            color = selectableColor; // Green for processed cells
-          } else {
-            color = selectedColor; // Black for unprocessed cells
-          }
-        } else {
-          color = selectedColor; // Black for idle state
-        }
-      }
-      // UI is in idle state and cell is selectable
-      else if (uiState == IDLE && gridModel.isSelectable(i, j)) {
-        color = selectableColor;  // Green for selectable cells
-      }
-      // Default empty cell color
-      else {
-        color = emptyColor;
-      }
-
-      // Draw cell rect
-      tft.fillRect(
-        j * CELL_SIZE + getOffsetX() + 1,
-        i * CELL_SIZE + getOffsetY() + 1,
-        CELL_SIZE - 1,
-        CELL_SIZE - 1,
-        color);
-
-      // Loop through path point indexes
-      for (int p = 0; p < gridModel.getPathLength(); p++) {
-
-        // Get path cell using the existing method
-        PathCell pathCell = gridModel.getPathCell(p);
-        
-        // Check if current cell is equal to path point
-        if (i == pathCell.row && j == pathCell.col) {
-
-          // If only one path point, define next point to draw up arrow
-          if (gridModel.getPathLength() == 1) {
-            drawCellDirection(pathCell.row, pathCell.col, pathCell.row - 1, pathCell.col);
-          }
-          // If last path point, use current point to draw circle
-          else if (p == gridModel.getPathLength() - 1) {
-            drawCellDirection(pathCell.row, pathCell.col, pathCell.row, pathCell.col);
-          }
-          // If any other path point, use next point in path
-          else {
-            PathCell nextPathCell = gridModel.getPathCell(p + 1);
-            drawCellDirection(pathCell.row, pathCell.col, nextPathCell.row, nextPathCell.col);
-          }
-        }
-      }
-    }
-  }
-}
-
-void drawCellDirection(int row, int col, int nextRow, int nextCol) {
-  // Calculate cell center
-  int centerX = col * CELL_SIZE + getOffsetX() + (CELL_SIZE / 2);
-  int centerY = row * CELL_SIZE + getOffsetY() + (CELL_SIZE / 2);
-
-  // If last cell in path draw circle (using existing method)
-  PathCell lastPathCell = gridModel.getPathCell(gridModel.getPathLength() - 1);
-  if (row == lastPathCell.row && col == lastPathCell.col) {
-    int circleRadius = 3;
-    tft.fillCircle(centerX, centerY, circleRadius, arrowColor);
-    return;
-  }
-
-  // Calculate direction - reversed from before
-  int dx = nextCol - col;  // Direction is next minus current
-  int dy = nextRow - row;
-
-  // Draw small filled triangle pointing in direction of movement
-  if (dx > 0) {  // Moving right
-    tft.fillTriangle(
-      centerX - 3, centerY - 3,
-      centerX - 3, centerY + 3,
-      centerX + 3, centerY,
-      arrowColor);
-  } else if (dx < 0) {  // Moving left
-    tft.fillTriangle(
-      centerX + 3, centerY - 3,
-      centerX + 3, centerY + 3,
-      centerX - 3, centerY,
-      arrowColor);
-  } else if (dy > 0) {  // Moving down
-    tft.fillTriangle(
-      centerX - 3, centerY - 3,
-      centerX + 3, centerY - 3,
-      centerX, centerY + 3,
-      arrowColor);
-  } else if (dy < 0) {  // Moving up
-    tft.fillTriangle(
-      centerX - 3, centerY + 3,
-      centerX + 3, centerY + 3,
-      centerX, centerY - 3,
-      arrowColor);
-  }
-}
-
-void drawUndoButton() {
-  // Button bounds are precomputed in layoutUI()
-  undoButton.draw(tft);
-}
-
-void drawStartButton() {
-  // Button bounds are precomputed in layoutUI()
-
-  // Init color and text
+void updateStartButton() {
+  // Update start button properties based on current state
   uint16_t currentColor;
   String buttonText;
-
+  
   switch (uiState) {
     case COUNTING:
-      {
-        currentColor = BUTTON_COUNTING_COLOR;
-        buttonText = String(countdownNumber);
-        break;
-      }
-
+      currentColor = BUTTON_COUNTING_COLOR;
+      buttonText = String(countdownNumber);
+      break;
     case RUNNING:
       currentColor = BUTTON_RUNNING_COLOR;
       buttonText = "Stop";
       break;
-
     case COMPLETE:
       currentColor = BUTTON_COMPLETE_COLOR;
       buttonText = "Done!";
       break;
-
     case IDLE:
     default:
       currentColor = BUTTON_IDLE_COLOR;
       buttonText = "Start";
       break;
   }
-
+  
   startButton.setLabel(buttonText);
   startButton.setBgColor(currentColor);
-  startButton.draw(tft);
-}
-
-void drawSettingsButton() {
-// Draw button background
-  settingsButton.draw(tft);
-}
-
-void drawSettingsMenu() {
-  // Update option values with current settings
-  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
-  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
-  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
-
-  // Draw the menu
-  settingsMenu.draw(tft);
 }
 
 void updateBrightnessDisplay() {
@@ -465,14 +265,6 @@ void updateDriveSpeedDisplay() {
 void updateDriveDistanceDisplay() {
   settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
   settingsMenu.redrawOption(2, tft);
-}
-
-bool isPointInRect(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight) {
-  return x >= rectX && x <= rectX + rectWidth && y >= rectY && y <= rectY + rectHeight;
-}
-
-bool isTouchInGrid(int x, int y) {
-  return isPointInRect(x, y, getOffsetX(), getOffsetY(), getGridWidth() - 1, getGridHeight() - 1);
 }
 
 // Function to calculate direction between two points
@@ -552,7 +344,7 @@ void executeMovement() {
 
           // Get current path cell for redrawing
           PathCell current = gridModel.getCurrentPathCell();
-          drawGridCells(current.row, current.row, current.col, current.col);
+          uiGrid.drawGridCells(tft, gridModel, uiState, current.row, current.row, current.col, current.col);
 
           // Check if current path point is the last
           if (gridModel.isPathComplete()) {
@@ -564,7 +356,8 @@ void executeMovement() {
             // Update UI and driving state
             uiState = COMPLETE;
             driveState = STOPPED;
-            drawStartButton();
+            updateStartButton();
+            startButton.draw(tft);
           }
 
           // Current path point is not the last
@@ -674,10 +467,11 @@ void loop() {
       }
 
       // Redraw entire grid
-      drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
+      uiGrid.drawGridCells(tft, gridModel, uiState, 0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 
       // Draw button
-      drawStartButton();
+      updateStartButton();
+      startButton.draw(tft);
 
       // Debounce delay
       delay(250);
@@ -692,7 +486,7 @@ void loop() {
       gridModel.resetDefaultPath();
 
       // Redraw entire grid
-      drawGridCells(0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
+      uiGrid.drawGridCells(tft, gridModel, uiState, 0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
 
       // Debounce delay
       delay(50);
@@ -707,7 +501,7 @@ void loop() {
 
         // Change to settings state and show menu
         uiState = SETTINGS;
-        drawSettingsMenu();
+        settingsMenu.draw(tft);
       }
 
       // Check if in settings state
@@ -723,12 +517,12 @@ void loop() {
     }
 
     // Check if grid touched while in idle state
-    else if (isTouchInGrid(pixelX, pixelY) && uiState == IDLE) {
+    else if (uiGrid.contains(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Grid button touched");
 
       // Calculated col/row of touched cell
-      int gridCol = (pixelX - getOffsetX()) / CELL_SIZE;
-      int gridRow = (pixelY - getOffsetY()) / CELL_SIZE;
+      int gridCol = (pixelX - uiGrid.x) / CELL_SIZE;
+      int gridRow = (pixelY - uiGrid.y) / CELL_SIZE;
       Serial.println(gridCol);
       Serial.println(gridRow);
       Serial.println(" ");
@@ -736,7 +530,7 @@ void loop() {
       // If cell is selectable, add to path and redraw surrounding cells
       if (gridModel.isSelectable(gridRow, gridCol)) {
         gridModel.pathAdd(gridRow, gridCol);
-        drawGridCells(gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
+        uiGrid.drawGridCells(tft, gridModel, uiState, gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
       }
     }
 
@@ -769,7 +563,8 @@ void loop() {
       uiState = RUNNING;
       gridModel.setCurrentPathIndex(0);
       gridModel.setCurrentDirection(UP);
-      drawStartButton();
+      updateStartButton();
+      startButton.draw(tft);
       //
     } else {
       // Calculate current countdown number
@@ -778,7 +573,8 @@ void loop() {
       // Only draw if number has changed
       if (currentNumber != countdownNumber) {
         countdownNumber = currentNumber;
-        drawStartButton();
+        updateStartButton();
+        startButton.draw(tft);
       }
     }
   }
