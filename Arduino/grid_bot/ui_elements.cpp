@@ -149,7 +149,7 @@ void UISettingsMenu::draw(Adafruit_ILI9341 &tft) const {
     }
 }
 
-int UISettingsMenu::getTouchedOption(int px, int py) const {
+int UISettingsMenu::getOptionAt(int px, int py) const {
     for (int i = 0; i < numOptions; i++) {
         if (px >= options[i].x && px <= options[i].x + options[i].width &&
             py >= options[i].y && py <= options[i].y + options[i].height) {

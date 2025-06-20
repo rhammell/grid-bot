@@ -493,7 +493,7 @@ void loop() {
     // Check if in settings state
     else if (uiState == SETTINGS) {
       // Get which option was touched
-      int touchedOption = settingsMenu.getTouchedOption(pixelX, pixelY);
+      int touchedOption = settingsMenu.getOptionAt(pixelX, pixelY);
       
       if (touchedOption >= 0) {
         // Check for arrow touches on the specific option

@@ -284,7 +284,7 @@ public:
 
     void layout();
     void draw(Adafruit_ILI9341 &tft) const;
-    int getTouchedOption(int px, int py) const; // Returns option index or -1 if none
+    int getOptionAt(int px, int py) const; // Returns option index at given coordinates or -1 if none
 
     // Helper methods for setup and updates
     void setupOptions(const String* labels, int count);
