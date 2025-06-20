@@ -12,10 +12,10 @@ void UITextButton::draw(Adafruit_ILI9341 &tft) const {
 
   tft.setTextColor(textColor);
   tft.setTextSize(textSize);
-  int charWidth = 6 * textSize;
+  int charWidth = FONT_CHAR_WIDTH * textSize;
   int textWidth = label.length() * charWidth;
   int textX = x + (width - textWidth) / 2;
-  int textY = y + (height - (8 * textSize)) / 2;
+  int textY = y + (height - (FONT_CHAR_HEIGHT * textSize)) / 2;
   tft.setCursor(textX, textY);
   tft.print(label);
 }
@@ -53,16 +53,16 @@ void UIArrow::draw(Adafruit_ILI9341 &tft) const {
 
 void UISettingsValue::draw(Adafruit_ILI9341 &tft) const {
     // Clear the entire value area using calculated height
-    int textHeight = charHeight * textSize;
+    int textHeight = FONT_CHAR_HEIGHT * textSize;
     tft.fillRect(x, y, width, textHeight, backgroundColor);
 
     // Set text properties
     tft.setTextSize(textSize);
     tft.setTextColor(textColor);
     
-    // Calculate centered position for text using charWidth
+    // Calculate centered position for text using FONT_CHAR_WIDTH
     int fontPadding = textSize;
-    int scaledCharWidth = charWidth * textSize;
+    int scaledCharWidth = FONT_CHAR_WIDTH * textSize;
     int actualTextWidth = value.length() * scaledCharWidth - fontPadding;
     int textX = x + (width - actualTextWidth) / 2;
     
@@ -72,7 +72,7 @@ void UISettingsValue::draw(Adafruit_ILI9341 &tft) const {
 
 void UISettingsOption::layout() {
     // Calculate character width based on text size
-    int charWidth = 6 * textSize;
+    int charWidth = FONT_CHAR_WIDTH * textSize;
     int fontPadding = textSize;
     
     // Calculate label position (centered)
@@ -102,12 +102,10 @@ void UISettingsOption::layout() {
     int maxValueChars = 8; // "Standard" is the longest label
     int maxValueWidth = maxValueChars * charWidth - fontPadding;
     int valueX = x + (width - maxValueWidth) / 2;
-    int valueY = arrowY + (arrowHeight - textSize * 8) / 2;
-    
+    int valueY = arrowY + (arrowHeight - textSize * FONT_CHAR_HEIGHT) / 2;
     value.setPosition(valueX, valueY, maxValueWidth);
     value.setColors(backgroundColor, textColor);
     value.setTextSize(textSize);
-    value.setFontMetrics(6, 8);
 }
 
 void UISettingsOption::draw(Adafruit_ILI9341 &tft) const {

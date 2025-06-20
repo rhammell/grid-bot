@@ -5,6 +5,7 @@
 #include "icons.h"
 #include "ui_elements.h"
 #include "grid_model.h"
+#include "settings_manager.h"
 
 // TFT Pins
 #define TFT_CS 17
@@ -30,13 +31,6 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define TOUCH_MIN_Y 782
 #define TOUCH_MAX_Y 993
 
-// Font metrics
-const int FONT_CHAR_WIDTH = 6;
-const int FONT_CHAR_HEIGHT = 8;
-
-// Display brightness percent
-int displayBrightness = 60;
-
 // Screen dimensions
 int screenWidth;
 int screenHeight;
@@ -44,15 +38,15 @@ int screenHeight;
 // Grid model instance
 GridModel gridModel;
 
+// Settings manager instance
+SettingsManager settingsManager;
+
 // UI elements
 UIIconButton undoButton;
 UITextButton startButton;
 UIIconButton settingsButton;
 UISettingsMenu settingsMenu;
 UIGrid uiGrid;
-
-// Settings option labels
-const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
 
 // Set current state
 UIState uiState = IDLE;
@@ -66,32 +60,6 @@ enum DriveState {
 
 // Set current state
 DriveState driveState = STOPPED;
-
-// Drive speed enum
-enum DriveSpeed {
-  SPEED_SLOW,
-  SPEED_STANDARD,
-  SPEED_FAST
-};
-
-// Set current drive speed
-DriveSpeed driveSpeed = SPEED_STANDARD;
-
-// Drive speed labels
-const char* DRIVE_SPEED_LABELS[] = { "Slow", "Standard", "Fast" };
-
-// Grid size enum
-enum DriveDistance {
-  DISTANCE_COMPACT,
-  DISTANCE_STANDARD,
-  DISTANCE_EXTENDED
-};
-
-// Set current grid size
-DriveDistance driveDistance = DISTANCE_STANDARD;
-
-// Grid size labels
-const char* DRIVE_DISTANCE_LABELS[] = { "Compact", "Standard", "Extended" };
 
 // Default countdown state
 unsigned long countdownStart = 0;
@@ -144,10 +112,10 @@ void setup() {
   uiGrid.setSize(numRows, numCols);
 
   // Initialize settings menu
-  settingsMenu.setupOptions(SETTINGS_LABELS, 3);
-  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
-  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
-  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
+  settingsMenu.setupOptions(SettingsManager::getSettingsLabels(), SettingsManager::getSettingsLabelsCount());
+  settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
+  settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
+  settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
 
   // Layout and draw UI
   layoutUI();
@@ -171,7 +139,6 @@ void layoutUI() {
     // Undo button position
     undoButton.setBounds(gridX, y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
     undoButton.setIcon(UNDO_ICON, 24, 24);
-    undoButton.setBgColor(ILI9341_DARKGREY);
 
     // Start button position and width
     int startButtonWidth = gridWidth - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
@@ -179,15 +146,12 @@ void layoutUI() {
     int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
     startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
     startButton.setBgColor(BUTTON_IDLE_COLOR);
-    startButton.setTextColor(BUTTON_TEXT_COLOR);
-    startButton.setTextSize(2);
     startButton.setLabel("Start");
 
     // Settings button position
     int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
     settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
     settingsButton.setIcon(SETTINGS_ICON, 24, 24);
-    settingsButton.setBgColor(ILI9341_DARKGREY);
 
     // Layout settings menu
     int menuWidth = gridWidth * 0.85;
@@ -195,11 +159,6 @@ void layoutUI() {
     int menuX = gridX + (gridWidth - menuWidth) / 2;
     int menuY = gridY + (gridHeight - menuHeight) / 2;
     settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
-    settingsMenu.setColors(SETTINGS_MENU_BG_COLOR, ILI9341_WHITE, SETTINGS_MENU_TEXT_COLOR);
-    settingsMenu.setTextSize(SETTINGS_TEXT_SIZE);
-    settingsMenu.setArrowSize(SETTINGS_ARROW_WIDTH, SETTINGS_ARROW_HEIGHT);
-    settingsMenu.setArrowMargin(SETTINGS_ARROW_MARGIN_X);
-    settingsMenu.setOptionSpacing(70);
     settingsMenu.layout();
 }
 
@@ -213,11 +172,8 @@ void drawUI() {
 }
 
 void setBrightness() {
-  // Ensure global brightness is in valid range
-  displayBrightness = constrain(displayBrightness, 0, 100);
-
-  // Convert percentage (0-100) to PWM value (0-255)
-  int pwmOutput = map(displayBrightness, 0, 100, 0, 255);
+  // Get PWM value from settings manager
+  int pwmOutput = settingsManager.getBrightnessPWM();
 
   // Set PWM output
   analogWrite(TFT_LED, pwmOutput);
@@ -253,17 +209,17 @@ void updateStartButton() {
 }
 
 void updateBrightnessDisplay() {
-  settingsMenu.updateOptionValue(0, String(displayBrightness) + "%");
+  settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
   settingsMenu.redrawOption(0, tft);
 }
 
 void updateDriveSpeedDisplay() {
-  settingsMenu.updateOptionValue(1, DRIVE_SPEED_LABELS[driveSpeed]);
+  settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
   settingsMenu.redrawOption(1, tft);
 }
 
 void updateDriveDistanceDisplay() {
-  settingsMenu.updateOptionValue(2, DRIVE_DISTANCE_LABELS[driveDistance]);
+  settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
   settingsMenu.redrawOption(2, tft);
 }
 
@@ -592,21 +548,17 @@ void loop() {
 void handleSettingsLeftArrow(int optionIndex) {
   switch (optionIndex) {
     case 0: // Brightness
-      displayBrightness = max(10, displayBrightness - 10);
+      settingsManager.adjustBrightness(-10);
       setBrightness();
       updateBrightnessDisplay();
       break;
     case 1: // Drive Speed
-      if (driveSpeed > SPEED_SLOW) {
-        driveSpeed = (DriveSpeed)(driveSpeed - 1);
-        updateDriveSpeedDisplay();
-      }
+      settingsManager.decreaseDriveSpeed();
+      updateDriveSpeedDisplay();
       break;
     case 2: // Drive Distance
-      if (driveDistance > DISTANCE_COMPACT) {
-        driveDistance = (DriveDistance)(driveDistance - 1);
-        updateDriveDistanceDisplay();
-      }
+      settingsManager.decreaseDriveDistance();
+      updateDriveDistanceDisplay();
       break;
   }
 }
@@ -614,21 +566,17 @@ void handleSettingsLeftArrow(int optionIndex) {
 void handleSettingsRightArrow(int optionIndex) {
   switch (optionIndex) {
     case 0: // Brightness
-      displayBrightness = min(100, displayBrightness + 10);
+      settingsManager.adjustBrightness(10);
       setBrightness();
       updateBrightnessDisplay();
       break;
     case 1: // Drive Speed
-      if (driveSpeed < SPEED_FAST) {
-        driveSpeed = (DriveSpeed)(driveSpeed + 1);
-        updateDriveSpeedDisplay();
-      }
+      settingsManager.increaseDriveSpeed();
+      updateDriveSpeedDisplay();
       break;
     case 2: // Drive Distance
-      if (driveDistance < DISTANCE_EXTENDED) {
-        driveDistance = (DriveDistance)(driveDistance + 1);
-        updateDriveDistanceDisplay();
-      }
+      settingsManager.increaseDriveDistance();
+      updateDriveDistanceDisplay();
       break;
   }
 }
