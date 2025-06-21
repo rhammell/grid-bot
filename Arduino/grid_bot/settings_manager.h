@@ -69,16 +69,6 @@ public:
   static const char* getSettingLabel(SettingOption option);
   static int getSettingIndex(SettingOption option);
   
-  // Compile-time mapping function
-  static constexpr const char* getSettingLabelConstexpr(SettingOption option) {
-    switch (option) {
-      case BRIGHTNESS: return "Brightness";
-      case DRIVE_SPEED: return "Drive Speed";
-      case DRIVE_DISTANCE: return "Drive Distance";
-      default: return "Unknown";
-    }
-  }
-  
   // Utility methods
   void resetToDefaults();
   
