@@ -48,6 +48,15 @@ UIIconButton settingsButton;
 UISettingsMenu settingsMenu;
 UIGrid uiGrid;
 
+// UI State enum
+enum UIState {
+  IDLE,
+  COUNTING,
+  RUNNING,
+  SETTINGS,
+  COMPLETE
+};
+
 // Set current state
 UIState uiState = IDLE;
 
@@ -73,6 +82,10 @@ const unsigned long TURN_MOVE_TIME = 2000;     // Time to execute a 90-degree tu
 // Current movement tracking
 unsigned long moveStartTime;  // Start time of current movement
 bool isTurning = false;        // Whether bot is currently executing a turn
+
+// Add these at the top, after other globals
+unsigned long lastTouchTime = 0;
+const unsigned long touchDebounceDelay = 200; // milliseconds
 
 void setup() {
   Serial.begin(9600);
@@ -123,12 +136,10 @@ void setup() {
 }
 
 void layoutUI() {
-    // Calculate grid bounds
+    // Set grid bounds
     int gridWidth = gridModel.getNumCols() * CELL_SIZE;
     int gridHeight = gridModel.getNumRows() * CELL_SIZE;
     int gridX = (screenWidth - (gridWidth + 1)) / 2;
-
-    // Center the grid + button row as a group vertically
     int totalGroupHeight = gridHeight + BUTTON_MARGIN + BUTTON_HEIGHT + 1;
     int gridY = (screenHeight - totalGroupHeight) / 2;
     uiGrid.setBounds(gridX, gridY, gridWidth, gridHeight);
@@ -206,30 +217,6 @@ void updateStartButton() {
   
   startButton.setLabel(buttonText);
   startButton.setBgColor(currentColor);
-}
-
-void updateBrightnessDisplay() {
-  settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
-  settingsMenu.redrawOption(0, tft);
-}
-
-void updateDriveSpeedDisplay() {
-  settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
-  settingsMenu.redrawOption(1, tft);
-}
-
-void updateDriveDistanceDisplay() {
-  settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
-  settingsMenu.redrawOption(2, tft);
-}
-
-// Function to calculate direction between two points
-Direction getDirection(int startRow, int startCol, int endRow, int endCol) {
-  if (endRow < startRow) return UP;    // Up
-  if (endCol > startCol) return RIGHT; // Right
-  if (endRow > startRow) return DOWN;  // Down
-  if (endCol < startCol) return LEFT;  // Left
-  return gridModel.getCurrentDirection();           // No change
 }
 
 // Function to calculate required turn
@@ -345,7 +332,7 @@ void executeMovement() {
         break;
       }
 
-    // Turning state
+    // Turning state  
     case TURNING:
       {
         // Check if turn is complete
@@ -378,6 +365,15 @@ void loop() {
   // Check if touch occured
   if (p.z > ts.pressureThreshhold) {
 
+    // Do not process if touch occured within debounce period
+    unsigned long now = millis();
+    if (now - lastTouchTime < touchDebounceDelay) {
+      return;
+    }
+
+    // Update last touch time
+    lastTouchTime = now;
+
     // Calculate touch pixel coordinates
     int pixelX = map(p.x, TOUCH_MIN_X, TOUCH_MAX_X, 0, screenWidth);
     int pixelY = map(p.y, TOUCH_MIN_Y, TOUCH_MAX_Y, 0, screenHeight);
@@ -391,142 +387,82 @@ void loop() {
 
       // Process touch based on current state
       switch (uiState) {
-
-        // Idle state
         case IDLE:
-          {
-            // Set to counting state and initialze couting variables
-            uiState = COUNTING;
-            countdownStart = millis();
-            countdownNumber = countdownDuration / 1000;
-            break;
-          }
-
-        // Counting state
+          uiState = COUNTING;
+          countdownStart = millis();
+          countdownNumber = countdownDuration / 1000;
+          break;
         case COUNTING:
-          // Set to idle state
           uiState = IDLE;
           break;
-
-        // Running state
         case RUNNING:
-          // Set to idle state and stopped driving state
           uiState = IDLE;
           driveState = STOPPED;
           break;
-
-        // Running state
         case COMPLETE:
-          // Set to idle state
           uiState = IDLE;
           break;
       }
 
-      // Redraw entire grid
       uiGrid.drawGridCells(tft, gridModel, uiState, 0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
-
-      // Draw button
       updateStartButton();
       startButton.draw(tft);
-
-      // Debounce delay
-      delay(250);
     }
-
     // Check if undo button touched while in idle state
     else if (undoButton.contains(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Undo button touched");
-
-      // Reset grid values and path to default cells
       gridModel.resetGridValues();
       gridModel.resetDefaultPath();
-
-      // Redraw entire grid
       uiGrid.drawGridCells(tft, gridModel, uiState, 0, gridModel.getNumRows() - 1, 0, gridModel.getNumCols() - 1);
-
-      // Debounce delay
-      delay(50);
     }
-
     // Check if settings button touched
     else if (settingsButton.contains(pixelX, pixelY)) {
       Serial.println("Settings button touched");
-
-      // Check if in idle state
       if (uiState == IDLE) {
-
-        // Change to settings state and show menu
         uiState = SETTINGS;
         settingsMenu.draw(tft);
-      }
-
-      // Check if in settings state
-      else if (uiState == SETTINGS) {
-
-        // Change back to idle state and redraw main interface
+      } else if (uiState == SETTINGS) {
         uiState = IDLE;
         drawUI();
       }
-
-      // Debounce delay
-      delay(250);
     }
-
     // Check if grid touched while in idle state
     else if (uiGrid.contains(pixelX, pixelY) && uiState == IDLE) {
       Serial.println("Grid button touched");
-
-      // Calculated col/row of touched cell
       int gridCol = (pixelX - uiGrid.x) / CELL_SIZE;
       int gridRow = (pixelY - uiGrid.y) / CELL_SIZE;
       Serial.println(gridCol);
       Serial.println(gridRow);
       Serial.println(" ");
-
-      // If cell is selectable, add to path and redraw surrounding cells
       if (gridModel.isSelectable(gridRow, gridCol)) {
         gridModel.pathAdd(gridRow, gridCol);
         uiGrid.drawGridCells(tft, gridModel, uiState, gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
       }
     }
-
     // Check if in settings state
     else if (uiState == SETTINGS) {
-      // Get which option was touched
-      int touchedOption = settingsMenu.getOptionAt(pixelX, pixelY);
-      
-      if (touchedOption >= 0) {
-        // Check for arrow touches on the specific option
-        if (settingsMenu.options[touchedOption].leftArrow.contains(pixelX, pixelY)) {
-          handleSettingsArrow(static_cast<SettingOption>(touchedOption), -1);
-          delay(250);
+      int optionIndex = settingsMenu.optionIndexContaining(pixelX, pixelY);
+      if (optionIndex >= 0) {
+        if (settingsMenu.leftArrowContains(pixelX, pixelY, optionIndex)) {
+          handleSettingsArrow(static_cast<SettingOption>(optionIndex), -1);
         }
-        else if (settingsMenu.options[touchedOption].rightArrow.contains(pixelX, pixelY)) {
-          handleSettingsArrow(static_cast<SettingOption>(touchedOption), 1);
-          delay(250);
+        else if (settingsMenu.rightArrowContains(pixelX, pixelY, optionIndex)) {
+          handleSettingsArrow(static_cast<SettingOption>(optionIndex), 1);
         }
       }
     }
-
-    // Debounce delay
-    delay(50);
   }
 
-  // Check if in coutning state
+  // Check if in counting state
   if (uiState == COUNTING) {
-    //
     if (millis() - countdownStart >= countdownDuration) {
       uiState = RUNNING;
       gridModel.setCurrentPathIndex(0);
       gridModel.setCurrentDirection(UP);
       updateStartButton();
       startButton.draw(tft);
-      //
     } else {
-      // Calculate current countdown number
       int currentNumber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
-
-      // Only draw if number has changed
       if (currentNumber != countdownNumber) {
         countdownNumber = currentNumber;
         updateStartButton();
@@ -537,26 +473,29 @@ void loop() {
 
   // Check if in running state
   if (uiState == RUNNING) {
-    // Execute bot movements
     executeMovement();
   }
 
+  // Loop delay
   delay(50);
 }
 
-// New helper function for settings handling using enum and direction
+// Helper function for settings handling using enum and direction
 void handleSettingsArrow(SettingOption option, int direction) {
   settingsManager.adjustSetting(option, direction);
   switch (option) {
     case BRIGHTNESS:
       setBrightness();
-      updateBrightnessDisplay();
+      settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
+      settingsMenu.redrawOption(0, tft);
       break;
     case DRIVE_SPEED:
-      updateDriveSpeedDisplay();
+      settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
+      settingsMenu.redrawOption(1, tft);
       break;
     case DRIVE_DISTANCE:
-      updateDriveDistanceDisplay();
+      settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
+      settingsMenu.redrawOption(2, tft);
       break;
   }
 }

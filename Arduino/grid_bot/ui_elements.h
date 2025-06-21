@@ -43,15 +43,6 @@ const uint16_t SETTINGS_TEXT_COLOR = ILI9341_WHITE;
 const uint16_t SETTINGS_BORDER_COLOR = ILI9341_WHITE;
 const uint16_t SETTINGS_ARROW_COLOR = ILI9341_WHITE;
 
-// UI State enum (moved from grid_bot.ino)
-enum UIState {
-  IDLE,
-  COUNTING,
-  RUNNING,
-  SETTINGS,
-  COMPLETE
-};
-
 // Settings menu dimensions
 const int SETTINGS_TEXT_SIZE = 2;
 const int SETTINGS_ARROW_WIDTH = 38;
@@ -284,7 +275,7 @@ public:
 
     void layout();
     void draw(Adafruit_ILI9341 &tft) const;
-    int getOptionAt(int px, int py) const; // Returns option index at given coordinates or -1 if none
+    int optionIndexContaining(int px, int py) const; // Returns index of option containing the point, or -1 if none
 
     // Helper methods for setup and updates
     void setupOptions(const String* labels, int count);
@@ -292,6 +283,14 @@ public:
 
     // Add this method to the UISettingsMenu class
     void redrawOption(int optionIndex, Adafruit_ILI9341 &tft) const;
+
+    // Helper functions for arrow hit-testing
+    bool leftArrowContains(int px, int py, int optionIndex) const;
+    bool rightArrowContains(int px, int py, int optionIndex) const;
+
+    // Public getter for options
+    UISettingsOption& getOption(int index) { return options[index]; }
+    const UISettingsOption& getOption(int index) const { return options[index]; }
 
 private:
     static const int MAX_OPTIONS = 3;

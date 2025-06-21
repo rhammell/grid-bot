@@ -19,7 +19,7 @@ int SettingsManager::getDisplayBrightness() const {
 }
 
 void SettingsManager::setDisplayBrightness(int brightness) {
-  displayBrightness = constrain(brightness, 0, 100);
+  displayBrightness = constrain(brightness, 10, 100);
 }
 
 void SettingsManager::adjustBrightness(int delta) {

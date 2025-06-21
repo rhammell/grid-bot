@@ -149,7 +149,7 @@ void UISettingsMenu::draw(Adafruit_ILI9341 &tft) const {
     }
 }
 
-int UISettingsMenu::getOptionAt(int px, int py) const {
+int UISettingsMenu::optionIndexContaining(int px, int py) const {
     for (int i = 0; i < numOptions; i++) {
         if (px >= options[i].x && px <= options[i].x + options[i].width &&
             py >= options[i].y && py <= options[i].y + options[i].height) {
@@ -176,6 +176,21 @@ void UISettingsMenu::redrawOption(int optionIndex, Adafruit_ILI9341 &tft) const 
     if (optionIndex >= 0 && optionIndex < numOptions) {
         options[optionIndex].draw(tft);
     }
+}
+
+// Implementation of arrow hit-testing helpers for UISettingsMenu
+bool UISettingsMenu::leftArrowContains(int px, int py, int optionIndex) const {
+    if (optionIndex >= 0 && optionIndex < numOptions) {
+        return options[optionIndex].leftArrow.contains(px, py);
+    }
+    return false;
+}
+
+bool UISettingsMenu::rightArrowContains(int px, int py, int optionIndex) const {
+    if (optionIndex >= 0 && optionIndex < numOptions) {
+        return options[optionIndex].rightArrow.contains(px, py);
+    }
+    return false;
 }
 
 // --- UIGrid implementation ---
