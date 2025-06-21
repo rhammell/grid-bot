@@ -4,6 +4,7 @@
 #include <Adafruit_ILI9341.h>
 #include <Arduino.h>
 #include "grid_model.h"
+#include "state.h"
 
 // UI Configuration Constants
 #define CELL_SIZE 30

@@ -6,6 +6,7 @@
 #include "ui_elements.h"
 #include "grid_model.h"
 #include "settings_manager.h"
+#include "state.h"
 
 // TFT Pins
 #define TFT_CS 17
@@ -48,24 +49,8 @@ UIIconButton settingsButton;
 UISettingsMenu settingsMenu;
 UIGrid uiGrid;
 
-// UI State enum
-enum UIState {
-  IDLE,
-  COUNTING,
-  RUNNING,
-  SETTINGS,
-  COMPLETE
-};
-
 // Set current state
 UIState uiState = IDLE;
-
-// Driving state enum
-enum DriveState {
-  STOPPED,
-  TURNING,
-  DRIVING
-};
 
 // Set current state
 DriveState driveState = STOPPED;
