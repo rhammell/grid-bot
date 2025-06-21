@@ -1,7 +1,11 @@
 #include "settings_manager.h"
 
-// Settings option labels
-const String SETTINGS_LABELS[] = { "Brightness", "Drive Speed", "Drive Distance" };
+// Settings option mapping
+const SettingInfo SETTINGS_INFO[] = { 
+  { BRIGHTNESS, "Brightness" },
+  { DRIVE_SPEED, "Drive Speed" },
+  { DRIVE_DISTANCE, "Drive Distance" }
+};
 const char* DRIVE_SPEED_LABELS[] = { "Slow", "Standard", "Fast" };
 const char* DRIVE_DISTANCE_LABELS[] = { "Compact", "Standard", "Extended" };
 
@@ -83,11 +87,34 @@ const char* SettingsManager::getDriveDistanceLabel() const {
 
 // Settings labels
 const String* SettingsManager::getSettingsLabels() {
-  return SETTINGS_LABELS;
+  static String labels[3];
+  for (int i = 0; i < 3; i++) {
+    labels[i] = String(SETTINGS_INFO[i].label);
+  }
+  return labels;
 }
 
 int SettingsManager::getSettingsLabelsCount() {
-  return sizeof(SETTINGS_LABELS) / sizeof(SETTINGS_LABELS[0]);
+  return sizeof(SETTINGS_INFO) / sizeof(SETTINGS_INFO[0]);
+}
+
+// Helper functions for robust mapping
+const char* SettingsManager::getSettingLabel(SettingOption option) {
+  for (int i = 0; i < getSettingsLabelsCount(); i++) {
+    if (SETTINGS_INFO[i].option == option) {
+      return SETTINGS_INFO[i].label;
+    }
+  }
+  return "Unknown"; // Fallback
+}
+
+int SettingsManager::getSettingIndex(SettingOption option) {
+  for (int i = 0; i < getSettingsLabelsCount(); i++) {
+    if (SETTINGS_INFO[i].option == option) {
+      return i;
+    }
+  }
+  return -1; // Not found
 }
 
 // Utility methods

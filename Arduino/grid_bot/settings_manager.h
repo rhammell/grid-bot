@@ -20,8 +20,14 @@ enum DriveDistance {
 // Setting option enum
 enum SettingOption { BRIGHTNESS, DRIVE_SPEED, DRIVE_DISTANCE };
 
+// Struct to map setting options to their labels
+struct SettingInfo {
+  SettingOption option;
+  const char* label;
+};
+
 // Settings option labels
-extern const String SETTINGS_LABELS[];
+extern const SettingInfo SETTINGS_INFO[];
 extern const char* DRIVE_SPEED_LABELS[];
 extern const char* DRIVE_DISTANCE_LABELS[];
 
@@ -58,6 +64,20 @@ public:
   // Settings labels
   static const String* getSettingsLabels();
   static int getSettingsLabelsCount();
+  
+  // Helper functions for robust mapping
+  static const char* getSettingLabel(SettingOption option);
+  static int getSettingIndex(SettingOption option);
+  
+  // Compile-time mapping function
+  static constexpr const char* getSettingLabelConstexpr(SettingOption option) {
+    switch (option) {
+      case BRIGHTNESS: return "Brightness";
+      case DRIVE_SPEED: return "Drive Speed";
+      case DRIVE_DISTANCE: return "Drive Distance";
+      default: return "Unknown";
+    }
+  }
   
   // Utility methods
   void resetToDefaults();

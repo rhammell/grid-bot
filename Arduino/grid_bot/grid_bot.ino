@@ -68,9 +68,9 @@ const unsigned long TURN_MOVE_TIME = 2000;     // Time to execute a 90-degree tu
 unsigned long moveStartTime;  // Start time of current movement
 bool isTurning = false;        // Whether bot is currently executing a turn
 
-// Add these at the top, after other globals
+// Touch debounce delay
 unsigned long lastTouchTime = 0;
-const unsigned long touchDebounceDelay = 200; // milliseconds
+const unsigned long touchDebounceDelay = 200;
 
 void setup() {
   Serial.begin(9600);
@@ -99,7 +99,16 @@ void setup() {
   screenWidth = tft.width();
   screenHeight = tft.height();
 
-  // Calculate grid size
+  // Initialize grid model
+  initGridModel();
+
+  // Layout and draw UI
+  initUI();
+  drawUI();
+}
+
+void initGridModel(){
+  // Calculate grid size to fit in screen
   int availableHeight = screenHeight - BUTTON_HEIGHT - BUTTON_MARGIN - 1;
   int availableWidth = screenWidth - 1;
   int numRows = availableHeight / CELL_SIZE;
@@ -107,55 +116,54 @@ void setup() {
   
   // Initialize grid model
   gridModel.initGrid(numRows, numCols);
-  uiGrid.setSize(numRows, numCols);
-
-  // Initialize settings menu
-  settingsMenu.setupOptions(SettingsManager::getSettingsLabels(), SettingsManager::getSettingsLabelsCount());
-  settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
-  settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
-  settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
-
-  // Layout and draw UI
-  layoutUI();
-  drawUI();
 }
 
-void layoutUI() {
-    // Set grid bounds
-    int gridWidth = gridModel.getNumCols() * CELL_SIZE;
-    int gridHeight = gridModel.getNumRows() * CELL_SIZE;
-    int gridX = (screenWidth - (gridWidth + 1)) / 2;
-    int totalGroupHeight = gridHeight + BUTTON_MARGIN + BUTTON_HEIGHT + 1;
-    int gridY = (screenHeight - totalGroupHeight) / 2;
-    uiGrid.setBounds(gridX, gridY, gridWidth, gridHeight);
+void initUI() {
+  // Set UI grid size
+  uiGrid.setSize(gridModel.getNumRows(), gridModel.getNumCols());
 
-    // Button row y position
-    int y = gridY + gridHeight + BUTTON_MARGIN + 1;
+  // Set grid bounds
+  int gridWidth = gridModel.getNumCols() * CELL_SIZE;
+  int gridHeight = gridModel.getNumRows() * CELL_SIZE;
+  int gridX = (screenWidth - (gridWidth + 1)) / 2;
+  int totalGroupHeight = gridHeight + BUTTON_MARGIN + BUTTON_HEIGHT + 1;
+  int gridY = (screenHeight - totalGroupHeight) / 2;
+  uiGrid.setBounds(gridX, gridY, gridWidth, gridHeight);
 
-    // Undo button position
-    undoButton.setBounds(gridX, y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
-    undoButton.setIcon(UNDO_ICON, 24, 24);
+  // Button row y position
+  int y = gridY + gridHeight + BUTTON_MARGIN + 1;
 
-    // Start button position and width
-    int startButtonWidth = gridWidth - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
-                       SETTINGS_BUTTON_WIDTH - BUTTON_MARGIN + 1;
-    int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
-    startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
-    startButton.setBgColor(BUTTON_IDLE_COLOR);
-    startButton.setLabel("Start");
+  // Set undo button bounds and icon
+  undoButton.setBounds(gridX, y, UNDO_BUTTON_WIDTH, BUTTON_HEIGHT);
+  undoButton.setIcon(UNDO_ICON, 24, 24);
 
-    // Settings button position
-    int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
-    settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
-    settingsButton.setIcon(SETTINGS_ICON, 24, 24);
+  // Set start button bounds and width
+  int startButtonWidth = gridWidth - UNDO_BUTTON_WIDTH - BUTTON_MARGIN -
+                      SETTINGS_BUTTON_WIDTH - BUTTON_MARGIN + 1;
+  int startX = undoButton.x + undoButton.width + BUTTON_MARGIN;
+  startButton.setBounds(startX, y, startButtonWidth, BUTTON_HEIGHT);
+  
+  // Update start button text and color
+  updateStartButton();
 
-    // Layout settings menu
-    int menuWidth = gridWidth * 0.85;
-    int menuHeight = 225;
-    int menuX = gridX + (gridWidth - menuWidth) / 2;
-    int menuY = gridY + (gridHeight - menuHeight) / 2;
-    settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
-    settingsMenu.layout();
+  // Set settings button bounds and icon
+  int settingsX = startButton.x + startButton.width + BUTTON_MARGIN;
+  settingsButton.setBounds(settingsX, y, SETTINGS_BUTTON_WIDTH, BUTTON_HEIGHT);
+  settingsButton.setIcon(SETTINGS_ICON, 24, 24);
+
+  // Set settings menu options
+  settingsMenu.setupOptions(SettingsManager::getSettingsLabels(), SettingsManager::getSettingsLabelsCount());
+  settingsMenu.updateOptionValue(BRIGHTNESS, String(settingsManager.getDisplayBrightness()) + "%");
+  settingsMenu.updateOptionValue(DRIVE_SPEED, settingsManager.getDriveSpeedLabel());
+  settingsMenu.updateOptionValue(DRIVE_DISTANCE, settingsManager.getDriveDistanceLabel());
+
+  // Set settings menu bounds
+  int menuWidth = gridWidth * 0.85;
+  int menuHeight = 225;
+  int menuX = gridX + (gridWidth - menuWidth) / 2;
+  int menuY = gridY + (gridHeight - menuHeight) / 2;
+  settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
+  settingsMenu.layout();
 }
 
 void drawUI() {
@@ -471,16 +479,16 @@ void handleSettingsArrow(SettingOption option, int direction) {
   switch (option) {
     case BRIGHTNESS:
       setBrightness();
-      settingsMenu.updateOptionValue(0, String(settingsManager.getDisplayBrightness()) + "%");
-      settingsMenu.redrawOption(0, tft);
+      settingsMenu.updateOptionValue(BRIGHTNESS, String(settingsManager.getDisplayBrightness()) + "%");
+      settingsMenu.redrawOption(BRIGHTNESS, tft);
       break;
     case DRIVE_SPEED:
-      settingsMenu.updateOptionValue(1, settingsManager.getDriveSpeedLabel());
-      settingsMenu.redrawOption(1, tft);
+      settingsMenu.updateOptionValue(DRIVE_SPEED, settingsManager.getDriveSpeedLabel());
+      settingsMenu.redrawOption(DRIVE_SPEED, tft);
       break;
     case DRIVE_DISTANCE:
-      settingsMenu.updateOptionValue(2, settingsManager.getDriveDistanceLabel());
-      settingsMenu.redrawOption(2, tft);
+      settingsMenu.updateOptionValue(DRIVE_DISTANCE, settingsManager.getDriveDistanceLabel());
+      settingsMenu.redrawOption(DRIVE_DISTANCE, tft);
       break;
   }
 }
