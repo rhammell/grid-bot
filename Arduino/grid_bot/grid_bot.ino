@@ -107,7 +107,6 @@ void setup() {
   drawUI();
 }
 
-//  
 void initGridModel(){
   // Calculate grid size to fit in screen
   int availableHeight = screenHeight - BUTTON_HEIGHT - BUTTON_MARGIN - 1;
@@ -118,7 +117,6 @@ void initGridModel(){
   // Initialize grid model
   gridModel.initGrid(numRows, numCols);
 }
-
 
 void initUI() {
   // Set UI grid size
@@ -165,9 +163,10 @@ void initUI() {
   int menuX = gridX + (gridWidth - menuWidth) / 2;
   int menuY = gridY + (gridHeight - menuHeight) / 2;
   settingsMenu.setPosition(menuX, menuY, menuWidth, menuHeight);
+
+  // Set settings options positions
   settingsMenu.layout();
 }
-
 
 void drawUI() {
   // Draw all UI elements
@@ -191,7 +190,7 @@ void updateStartButton() {
   uint16_t currentColor;
   String buttonText;
   
-  // Set properties based on current state
+  // Define properties based on current state
   switch (uiState) {
     case COUNTING:
       currentColor = BUTTON_COUNTING_COLOR;
@@ -336,12 +335,12 @@ void executeMovement() {
   }
 }
 
-void updateState() {
-  // Check if we're in countdown mode and handle countdown logic
+void handleState() {
+  // Handle countdown logic
   if (uiState == COUNTING) {
     handleCountdown();
   } 
-  // Check if we're in running mode and handle movement execution
+  // Handle movement execution
   else if (uiState == RUNNING) {
     executeMovement();
   }
@@ -350,15 +349,23 @@ void updateState() {
 void handleCountdown() {
   // Check if countdown duration has elapsed
   if (millis() - countdownStart >= countdownDuration) {
-    // Transition to running state and initialize path execution
+
+    // Change state to running
     uiState = RUNNING;
+
+    // Initialize path execution
     gridModel.setCurrentPathIndex(0);
     gridModel.setCurrentDirection(UP);
+
+    // Update and draw start button
     updateStartButton();
     startButton.draw(tft);
   } else {
+
     // Calculate current countdown number and update display if changed
     int currentNumber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
+    
+    // Update and draw start button if countdown number has changed
     if (currentNumber != countdownNumber) {
       countdownNumber = currentNumber;
       updateStartButton();
@@ -368,12 +375,13 @@ void handleCountdown() {
 }
 
 void handleTouch(TSPoint p) {
-  // Implement touch debouncing to prevent multiple rapid touches
-  static unsigned long lastTouchTime = 0;
+  // End processing if touch occurred within debounce period
   unsigned long now = millis();
   if (now - lastTouchTime < touchDebounceDelay) {
     return;
   }
+
+  // Update last touch time
   lastTouchTime = now;
 
   // Convert touch coordinates from raw values to screen pixel coordinates
@@ -381,63 +389,83 @@ void handleTouch(TSPoint p) {
   int pixelY = map(p.y, TOUCH_MIN_Y, TOUCH_MAX_Y, 0, screenHeight);
 
   // --- Touch Event Dispatching ---
-  // Handle settings menu interactions when in settings mode
-  if (uiState == SETTINGS) {
-    onTouchSettingsMenu(pixelX, pixelY);
-  }
-  // Handle start button interactions in all other modes
-  else if (startButton.contains(pixelX, pixelY)) {
+  // 
+  // Handle start button interactions outside of settings state
+  if (startButton.contains(pixelX, pixelY) && uiState != SETTINGS) {
     onTouchStartButton();
   }
-  // Handle undo button interactions only when in idle state
+  // Handle undo button interactions in idle state
   else if (undoButton.contains(pixelX, pixelY) && uiState == IDLE) {
     onTouchUndoButton();
   }
-  // Handle settings button interactions in all modes
+  // Handle settings button interactions
   else if (settingsButton.contains(pixelX, pixelY)) {
-    onTouchSettingsButton();
+    onTouchSettingsButton();  
   }
-  // Handle grid interactions only when in idle state
+  // Handle grid interactions in idle state
   else if (uiGrid.contains(pixelX, pixelY) && uiState == IDLE) {
     onTouchGrid(pixelX, pixelY);
   }
-}
-
-void onTouchUndoButton() {
-  Serial.println("Undo button touched");
-  gridModel.resetGridValues();
-  gridModel.resetDefaultPath();
-  uiGrid.drawGridCells(tft, gridModel, uiState);
+  // Handle settings menu interactions in settings state
+  else if (settingsMenu.contains(pixelX, pixelY) && uiState == SETTINGS) {
+    onTouchSettingsMenu(pixelX, pixelY);
+  }
 }
 
 void onTouchStartButton() {
-  Serial.println("Start button touched");
+  Serial.println("Start button toucheddd");
+
+  // Handle start button touch in different states
   switch (uiState) {
     case IDLE:
+      // Change state to counting set countdown values
       uiState = COUNTING;
       countdownStart = millis();
       countdownNumber = countdownDuration / 1000;
       break;
+
     case COUNTING:
+      // Fallthrough to next case
+
     case RUNNING:
+      // Fallthrough to next case
+
     case COMPLETE:
+      // Change state to idle and reset drive state
       uiState = IDLE;
       driveState = STOPPED;
       break;
   }
+
+  // Redraw grid cells
   uiGrid.drawGridCells(tft, gridModel, uiState);
+
+  // Update and draw start button
   updateStartButton();
   startButton.draw(tft);
 }
 
+void onTouchUndoButton() {
+  Serial.println("Undo button touched");
+
+  // Reset grid values and default path
+  gridModel.resetGridValues();
+  gridModel.resetDefaultPath();
+
+  // Redraw grid cells
+  uiGrid.drawGridCells(tft, gridModel, uiState);
+}
+
 void onTouchSettingsButton() {
   Serial.println("Settings button touched");
+
+  // In idle state, change to settings state and draw settings menu
   if (uiState == IDLE) {
     uiState = SETTINGS;
     settingsMenu.draw(tft);
-  } else if (uiState == SETTINGS) {
-    // This case is handled by the main dispatcher, but kept here for clarity
-    // In the new structure, this button effectively becomes an "exit settings" button.
+  } 
+  // In settings state, change to idle state and draw UI
+  else if (uiState == SETTINGS) {
     uiState = IDLE;
     drawUI();
   }
@@ -445,23 +473,26 @@ void onTouchSettingsButton() {
 
 void onTouchGrid(int pixelX, int pixelY) {
   Serial.println("Grid touched");
+
+  // Calculate grid column and row
   int gridCol = (pixelX - uiGrid.x) / CELL_SIZE;
   int gridRow = (pixelY - uiGrid.y) / CELL_SIZE;
+
+  // Check if cell is selectable
   if (gridModel.isSelectable(gridRow, gridCol)) {
+    // Add path cell to model
     gridModel.pathAdd(gridRow, gridCol);
+
+    // Redraw grid cells
     uiGrid.drawGridCells(tft, gridModel, uiState, gridRow - 2, gridRow + 2, gridCol - 2, gridCol + 2);
   }
 }
 
 void onTouchSettingsMenu(int pixelX, int pixelY) {
-  // First, check for exit condition (touching the settings button again)
-  if (settingsButton.contains(pixelX, pixelY)) {
-    onTouchSettingsButton();
-    return; // Exit early
-  }
-
-  // Otherwise, handle interactions within the menu
+  // Determine which option was touched
   int optionIndex = settingsMenu.optionIndexContaining(pixelX, pixelY);
+  
+  // Handle arrow interactions
   if (optionIndex >= 0) {
     if (settingsMenu.leftArrowContains(pixelX, pixelY, optionIndex)) {
       handleSettingsArrow(static_cast<SettingOption>(optionIndex), -1);
@@ -475,7 +506,7 @@ void handleSettingsArrow(SettingOption option, int direction) {
   // Update the setting option value in the manager
   settingsManager.adjustSetting(option, direction);
 
-  // Update and the option value in the settings menu
+  // Update value in settings menu and redraw
   switch (option) {
     case BRIGHTNESS:
       setBrightness();
@@ -493,10 +524,9 @@ void handleSettingsArrow(SettingOption option, int direction) {
   }
 }
 
-
 void loop() {
-  // Handle continuous updates (like countdowns or movement)
-  updateState();
+  // Handle countdown and movement states
+  handleState();
 
   // Check for and process discrete user touch events
   TSPoint p = ts.getPoint();

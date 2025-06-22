@@ -289,6 +289,11 @@ public:
     bool leftArrowContains(int px, int py, int optionIndex) const;
     bool rightArrowContains(int px, int py, int optionIndex) const;
 
+    // Check if a point is within the menu bounds
+    bool contains(int px, int py) const {
+        return px >= x && px <= x + width && py >= y && py <= y + height;
+    }
+
     // Public getter for options
     UISettingsOption& getOption(int index) { return options[index]; }
     const UISettingsOption& getOption(int index) const { return options[index]; }
