@@ -45,7 +45,6 @@ public:
   int getDisplayBrightness() const;
   void setDisplayBrightness(int brightness);
   void adjustBrightness(int delta);
-  int getBrightnessPWM() const;
   
   // Drive speed methods
   DriveSpeed getDriveSpeed() const;

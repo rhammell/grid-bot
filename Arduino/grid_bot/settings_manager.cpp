@@ -30,11 +30,6 @@ void SettingsManager::adjustBrightness(int delta) {
   setDisplayBrightness(displayBrightness + delta);
 }
 
-int SettingsManager::getBrightnessPWM() const {
-  // Convert percentage (0-100) to PWM value (0-255)
-  return map(displayBrightness, 0, 100, 0, 255);
-}
-
 // Drive speed methods
 DriveSpeed SettingsManager::getDriveSpeed() const {
   return driveSpeed;

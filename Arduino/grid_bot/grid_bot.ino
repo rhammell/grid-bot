@@ -73,6 +73,7 @@ unsigned long lastTouchTime = 0;
 const unsigned long touchDebounceDelay = 200;
 
 void setup() {
+  // Initialize serial communication
   Serial.begin(9600);
 
   // Set ADC resolution for touchsceen
@@ -178,8 +179,11 @@ void drawUI() {
 }
 
 void setBrightness() {
-  // Get PWM value from settings manager
-  int pwmOutput = settingsManager.getBrightnessPWM();
+  // Get brightness percentage from settings manager
+  int brightnessPercent = settingsManager.getDisplayBrightness();
+
+  // Convert percentage (0-100) to PWM value (0-255)
+  int pwmOutput = map(brightnessPercent, 0, 100, 0, 255);
 
   // Set PWM output
   analogWrite(TFT_LED, pwmOutput);
