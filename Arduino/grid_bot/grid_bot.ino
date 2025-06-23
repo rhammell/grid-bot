@@ -58,7 +58,6 @@ DriveState driveState = STOPPED;
 // Default countdown state
 unsigned long countdownStart = 0;
 const int countdownDuration = 5000;
-int countdownNumber = -1;
 
 // Movement timing constants
 const unsigned long FORWARD_MOVE_TIME = 2000;  // Time to move forward one cell
@@ -71,6 +70,9 @@ bool isTurning = false;        // Whether bot is currently executing a turn
 // Touch debounce delay
 unsigned long lastTouchTime = 0;
 const unsigned long touchDebounceDelay = 200;
+
+// Forward declarations
+void updateStartButton(int countdownNumber = -1);
 
 void setup() {
   // Initialize serial communication
@@ -180,16 +182,16 @@ void drawUI() {
 
 void setBrightness() {
   // Get brightness percentage from settings manager
-  int brightnessPercent = settingsManager.getDisplayBrightness();
+  int displayBrightness = settingsManager.getDisplayBrightness();
 
   // Convert percentage (0-100) to PWM value (0-255)
-  int pwmOutput = map(brightnessPercent, 0, 100, 0, 255);
+  int pwmOutput = map(displayBrightness, 0, 100, 0, 255);
 
   // Set PWM output
   analogWrite(TFT_LED, pwmOutput);
 }
 
-void updateStartButton() {
+void updateStartButton(int countdownNumber) {
   // Button properties
   uint16_t currentColor;
   String buttonText;
@@ -229,10 +231,6 @@ int calculateTurn(Direction currentDir, Direction targetDir) {
   if (diff == -3) diff = 1;
 
   return diff;
-}
-
-// Function to print current cell information
-void printCurrentCell(PathCell current, PathCell next) {
 }
 
 void executeMovement() {
@@ -351,8 +349,14 @@ void handleState() {
 }
 
 void handleCountdown() {
+  // Track last displayed number to avoid unnecessary updates
+  static int lastCountdownNumber = -1;
+
+  // Calculate time since countdown started
+  int countdownElapsed = millis() - countdownStart;
+
   // Check if countdown duration has elapsed
-  if (millis() - countdownStart >= countdownDuration) {
+  if (countdownElapsed >= countdownDuration) {
 
     // Change state to running
     uiState = RUNNING;
@@ -361,19 +365,27 @@ void handleCountdown() {
     gridModel.setCurrentPathIndex(0);
     gridModel.setCurrentDirection(UP);
 
+    // Reset our static variable for the next countdown
+    lastCountdownNumber = -1;
+
     // Update and draw start button
     updateStartButton();
     startButton.draw(tft);
-  } else {
-
-    // Calculate current countdown number and update display if changed
-    int currentNumber = (countdownDuration / 1000) - ((millis() - countdownStart) / 1000);
+  } 
+  // Counting still in progress
+  else {
+    // Calculate current number
+    int countdownNumber = (countdownDuration / 1000) - (countdownElapsed / 1000); //(countdownDuration - countdownElapsed) / 1000;
     
-    // Update and draw start button if countdown number has changed
-    if (currentNumber != countdownNumber) {
-      countdownNumber = currentNumber;
-      updateStartButton();
+    // Check if number has changed
+    if (countdownNumber != lastCountdownNumber) {
+
+      // Update button text and draw
+      updateStartButton(countdownNumber);
       startButton.draw(tft);
+
+      // Update last displayed number
+      lastCountdownNumber = countdownNumber;
     }
   }
 }
@@ -425,7 +437,10 @@ void onTouchStartButton() {
       // Change state to counting set countdown values
       uiState = COUNTING;
       countdownStart = millis();
-      countdownNumber = countdownDuration / 1000;
+
+      // Update button text and draw
+      updateStartButton(countdownDuration / 1000); 
+      startButton.draw(tft);
       break;
 
     case COUNTING:
@@ -438,15 +453,15 @@ void onTouchStartButton() {
       // Change state to idle and reset drive state
       uiState = IDLE;
       driveState = STOPPED;
+
+      // Update and draw start button
+      updateStartButton();
+      startButton.draw(tft);
       break;
   }
 
   // Redraw grid cells
   uiGrid.drawGridCells(tft, gridModel, uiState);
-
-  // Update and draw start button
-  updateStartButton();
-  startButton.draw(tft);
 }
 
 void onTouchUndoButton() {
